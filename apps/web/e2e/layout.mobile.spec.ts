@@ -9,6 +9,14 @@ async function expectNoHorizontalScroll(page: Page): Promise<void> {
   expect(scrollWidth).toBeLessThanOrEqual(innerWidth);
 }
 
+/** The fixed action bar must never cover the round's numbers (toBeInViewport alone can't tell). */
+async function expectClearOfActionBar(page: Page, testId: string): Promise<void> {
+  const bar = await page.getByTestId('action-bar').boundingBox();
+  const target = await page.getByTestId(testId).boundingBox();
+  if (!bar || !target) throw new Error(`missing ${testId} or the action bar`);
+  expect(target.y + target.height).toBeLessThanOrEqual(bar.y);
+}
+
 async function expectThumbTarget(page: Page, testId: string): Promise<void> {
   const target = page.getByTestId(testId);
   await expect(target).toBeInViewport();
@@ -25,6 +33,8 @@ test('fits a phone in portrait with the actions in thumb reach', async ({ page }
   await expectThumbTarget(page, 'cashout-button');
   await expect(page.getByTestId('multiplier')).toBeInViewport();
   await expect(page.getByTestId('next-risk')).toBeInViewport();
+  await expectClearOfActionBar(page, 'next-risk');
+  await expectClearOfActionBar(page, 'cashout-value');
 });
 
 test('stays usable in landscape', async ({ page }) => {

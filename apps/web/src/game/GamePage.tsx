@@ -60,7 +60,11 @@ export function GamePage() {
         <RecentRounds />
         <NoticeBar />
         <Stage />
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-ink/10 bg-night/90 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur-md lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+        <div
+          data-testid="action-bar"
+          data-action-bar
+          className="fixed inset-x-0 bottom-0 z-20 border-t border-ink/10 bg-night/90 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur-md lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none"
+        >
           <div className="mx-auto w-full max-w-lg">
             {manualControls ? (
               <>

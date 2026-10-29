@@ -59,7 +59,7 @@ test('cash out stays locked until the first pump', async ({ page }) => {
   await openGame(page);
   await placeBet(page, '1');
   await expect(page.getByTestId('cashout-button')).toBeDisabled();
-  await expect(page.getByText('Cash out unlocks after your first pump.')).toBeVisible();
+  await expect(page.getByTestId('cashout-button')).toContainText('after your first pump');
 });
 
 test('bets outside the limits are refused before they are sent', async ({ page }) => {

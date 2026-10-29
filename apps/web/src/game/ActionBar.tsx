@@ -70,7 +70,6 @@ export function ActionBar({ locked }: ActionBarProps) {
         onClick={onCashOut}
         disabled={busy || !canCashOut}
         data-testid="cashout-button"
-        aria-describedby={active && !canCashOut ? 'cashout-hint' : undefined}
         className="flex min-h-14 flex-col items-center justify-center rounded-full border border-win/60 bg-win/10 px-4 font-semibold text-win transition-[transform,background-color,opacity] active:scale-[0.97] disabled:cursor-not-allowed disabled:border-ink/15 disabled:bg-transparent disabled:text-ink-faint hover:enabled:bg-win/20"
       >
         <span className="flex items-center gap-2 text-base">
@@ -82,12 +81,11 @@ export function ActionBar({ locked }: ActionBarProps) {
           )}
         </span>
         {canCashOut && <span className="text-sm tabular">{money(round.cashoutCents ?? '0')}</span>}
+        {/* Inside the button, so the action bar keeps one height and never covers the stats. */}
+        {active && !canCashOut && (
+          <span className="text-xs font-normal text-ink-muted">after your first pump</span>
+        )}
       </button>
-      {active && !canCashOut && (
-        <p id="cashout-hint" className="col-span-2 text-center text-xs text-ink-muted">
-          Cash out unlocks after your first pump.
-        </p>
-      )}
     </div>
   );
 }

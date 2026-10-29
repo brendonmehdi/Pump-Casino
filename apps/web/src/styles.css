@@ -32,6 +32,15 @@
     background-color: var(--color-night);
   }
 
+  /* Below the desktop layout the action bar is fixed to the bottom. Controls in the page keep
+     clear of it when the browser scrolls them into view (WCAG 2.4.11); the bar's own buttons
+     are exempt, or focusing them would scroll the page. */
+  @media (width < 64rem) {
+    main :is(a, button, input, select, summary, [tabindex]):not([data-action-bar] *) {
+      scroll-margin-bottom: 8rem;
+    }
+  }
+
   body {
     min-height: 100dvh;
     margin: 0;
