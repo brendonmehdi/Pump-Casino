@@ -83,6 +83,11 @@ down one bucket (599, 598, … 593).
 requests through it are counted per edge until the list is updated: stricter, never
 spoofable. `true` stays refused.
 
+One gap remains. A request sent from a Cloudflare Worker arrives from Cloudflare's own address
+space, so entries to its left would be trusted. Such a client could choose its own rate-limit
+key. The limits here are a brake on abuse, not a security boundary: every money and fairness
+rule is enforced by the database, whoever the client claims to be.
+
 Rate limits (600 requests a minute and 60 new players an hour per address) live in memory. A
 free instance restarts when it wakes up, which resets them. That's acceptable for a play-money
 demo; scaling out would need a shared store.
