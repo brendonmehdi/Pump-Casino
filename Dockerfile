@@ -32,4 +32,8 @@ ENV HOST=0.0.0.0 \
     WEB_DIST_DIR=/app/apps/web/dist
 USER node
 EXPOSE 3000
-CMD ["node", "apps/api/dist/server.js"]
+# Migrations run at every start, before the server: they skip what's already applied and hold
+# an advisory lock, so this is safe on hosts without a separate pre-deploy step (such as
+# Render's free instances) and when two instances start at once. `exec` hands PID 1 to Node so
+# it receives SIGTERM and shuts down cleanly.
+CMD ["sh", "-c", "node apps/api/dist/migrate.js && exec node apps/api/dist/server.js"]
