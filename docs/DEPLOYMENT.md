@@ -159,3 +159,17 @@ Results on 2026-10-29 for the deployed commit `78a29ef`:
 | Open round across **Manual Deploy → Restart service**    | 12/12: same balance and round, cashed out, verified    |
 | Browser smoke test: desktop Chromium, Pixel 7, iPhone 14 | 12/12; each device's first journey has a clean console |
 | Proxy probes                                             | Visitor's own address; forged headers ignored          |
+
+After the final audit, `fb8802f` was deployed with Manual Deploy on 2026-10-29. CI had passed
+first. Before the deploy, a session was saved on `78a29ef` with a round left open.
+
+| Check (final audit deploy, `fb8802f`)                          | Result                                                                                                    |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `/api/health` version after the deploy                         | `fb8802f`, the GitHub head at the time                                                                    |
+| Upgrade with an open round (`78a29ef` → `fb8802f`, `--resume`) | 13/13: same session, balance and round; cashed out for the amount shown; both earlier rounds still verify |
+| API smoke test                                                 | 30/30                                                                                                     |
+| Browser smoke test: desktop Chromium, Pixel 7, iPhone 14       | 12/12                                                                                                     |
+| The audit's fixes on the live site                             | Bet fully visible at 1280×720; Enter on the focused Bet button bets; each bet uses a fresh client seed    |
+
+The final docs commit was deployed the same way afterwards, and its version checked again
+(see the README).

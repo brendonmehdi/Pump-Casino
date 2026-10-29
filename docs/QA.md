@@ -92,13 +92,15 @@ fixed, with a test where one applies:
 Run against https://pump-casino.onrender.com on 2026-10-29. Full detail is in
 `docs/DEPLOYMENT.md`.
 
-| Check                                                              | Result                                                         |
-| ------------------------------------------------------------------ | -------------------------------------------------------------- |
-| API smoke test (`tools/smoke-production.mjs`)                      | 30/30 on the first deploy and on the final commit `78a29ef`    |
-| Open round across a redeploy, then across Render's Restart service | 12/12 each: same balance and round, cashed out, verified       |
-| Browser smoke test on desktop Chromium, Pixel 7 and iPhone 14      | 12/12; each device's first journey has a clean console         |
-| HTTPS redirect, HSTS, CSP, cookie flags, immutable assets          | All as designed                                                |
-| Client address behind Cloudflare and Render                        | The visitor's own address; forged headers ignored (log probes) |
+| Check                                                                   | Result                                                         |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------- |
+| API smoke test (`tools/smoke-production.mjs`)                           | 30/30 on the first deploy and on the final commit `78a29ef`    |
+| Open round across a redeploy, then across Render's Restart service      | 12/12 each: same balance and round, cashed out, verified       |
+| Upgrade to the audited build (`78a29ef` → `fb8802f`), with a round open | 13/13: everything restored; rounds from before still verify    |
+| The audit's fixes, live (`fb8802f`)                                     | Laptop fold, keyboard betting and fresh client seeds confirmed |
+| Browser smoke test on desktop Chromium, Pixel 7 and iPhone 14           | 12/12; each device's first journey has a clean console         |
+| HTTPS redirect, HSTS, CSP, cookie flags, immutable assets               | All as designed                                                |
+| Client address behind Cloudflare and Render                             | The visitor's own address; forged headers ignored (log probes) |
 
 Two deployment defects were found on the live service and fixed:
 

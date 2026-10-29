@@ -224,9 +224,18 @@ Deployment was a short follow-up the same day, after Railway turned out to be un
 new account. It ran from the owner's request to use Render (11:31 EDT) to the final deployment
 commit (12:31 EDT), **about 60 minutes**. That covers the Render configuration,
 migrations at start, the production smoke tests, the live deploy and its verification, the two
-proxy-trust fixes, and these docs. The total is **about 3 hours 25 minutes**
-of agent time. The owner's own time writing the brief and reviewing the result isn't included;
-see [`AI_USAGE.md`](AI_USAGE.md) for who did what.
+proxy-trust fixes, and these docs.
+
+A final audit followed that afternoon, from the owner's request (13:05 EDT) to the final commit
+(14:26 EDT), **about 81 minutes**. It covered:
+
+- an independent recomputation of the math, and the comparison of five curve designs;
+- an adversarial code review and a live UX audit by two separate agents;
+- the fixes listed in [`docs/FINAL_AUDIT.md`](docs/FINAL_AUDIT.md);
+- a verified redeploy.
+
+The total is **about 4 hours 46 minutes** of agent time. The owner's own time writing the brief
+and reviewing the result isn't included; see [`AI_USAGE.md`](AI_USAGE.md) for who did what.
 
 ## More
 
