@@ -2,6 +2,28 @@ import { z } from 'zod';
 
 const flag = z.enum(['true', 'false']).transform((value) => value === 'true');
 
+/**
+ * Which proxies to believe about the client address, as a comma-separated list of proxy IPs,
+ * CIDRs or proxy-addr keywords (`loopback`, `linklocal`, `uniquelocal`), or `false`.
+ * X-Forwarded-For is then read from the right, so entries a client adds itself are ignored.
+ * `true` (trust everyone) would let a client choose its own rate-limit key, and Fastify 5
+ * deliberately trusts nothing for a bare hop count, so both are refused.
+ */
+const trustProxy = z
+  .string()
+  .default('false')
+  .refine((value) => value !== 'true' && !/^[0-9]+$/.test(value), {
+    message: 'TRUST_PROXY must be false or the addresses of trusted proxies (e.g. uniquelocal)',
+  })
+  .transform((value): false | string[] =>
+    value === 'false' || value === ''
+      ? false
+      : value
+          .split(',')
+          .map((entry) => entry.trim())
+          .filter((entry) => entry.length > 0),
+  );
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   HOST: z.string().min(1).default('0.0.0.0'),
@@ -12,10 +34,8 @@ const envSchema = z.object({
   DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(50).default(10),
   /** Defaults to true in production. Browsers only send Secure cookies over HTTPS. */
   COOKIE_SECURE: flag.optional(),
-  /** Set to true behind a reverse proxy (Railway) so request.ip is the client address. */
-  TRUST_PROXY: flag.default(false),
-  /** Extra origins allowed to send mutating requests, comma-separated (same-origin is always allowed). */
-  ALLOWED_ORIGINS: z.string().default(''),
+  /** Railway: the private addresses its edge proxy connects from (see SETUP_REQUIRED.md). */
+  TRUST_PROXY: trustProxy,
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(600),
   SESSIONS_PER_HOUR_PER_IP: z.coerce.number().int().min(1).default(60),
@@ -31,8 +51,7 @@ export interface AppConfig {
   readonly databaseUrl: string;
   readonly databasePoolMax: number;
   readonly cookieSecure: boolean;
-  readonly trustProxy: boolean;
-  readonly allowedOrigins: readonly string[];
+  readonly trustProxy: false | string[];
   readonly logLevel: string;
   readonly rateLimitPerMinute: number;
   readonly sessionsPerHourPerIp: number;
@@ -55,9 +74,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     databasePoolMax: e.DATABASE_POOL_MAX,
     cookieSecure: e.COOKIE_SECURE ?? e.NODE_ENV === 'production',
     trustProxy: e.TRUST_PROXY,
-    allowedOrigins: e.ALLOWED_ORIGINS.split(',')
-      .map((origin) => origin.trim())
-      .filter((origin) => origin.length > 0),
     logLevel: e.LOG_LEVEL,
     rateLimitPerMinute: e.RATE_LIMIT_PER_MINUTE,
     sessionsPerHourPerIp: e.SESSIONS_PER_HOUR_PER_IP,

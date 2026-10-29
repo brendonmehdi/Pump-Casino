@@ -85,8 +85,9 @@ export const historyQuerySchema = z.strictObject({
   /** Nonce of the last round on the previous page. */
   cursor: z
     .string()
-    .regex(/^[1-9][0-9]{0,15}$/, 'cursor must be a round nonce')
+    .regex(/^[1-9][0-9]{0,9}$/, 'cursor must be a round nonce')
     .transform(Number)
+    .refine((cursor) => cursor <= 2_147_483_647, 'cursor must be a round nonce')
     .optional(),
 });
 
@@ -105,7 +106,7 @@ export const publicRoundSchema = z
     /** Increments on every state change; send it back as expectedVersion. */
     version: z.int().min(0),
     betCents: centsSchema,
-    pumpCount: z.int().min(0),
+    pumpCount: z.int().min(0).max(rules.maxPumps),
     maxPumps: z.int().min(1),
     /** Multiplier reached, floored to 2 dp for display; null before the first pump. */
     multiplier: z.string().nullable(),
@@ -172,7 +173,7 @@ export const verificationDataSchema = z.strictObject({
   autoCashoutHundredths: hundredthsSchema.nullable(),
   outcome: z.strictObject({
     status: z.enum(['POPPED', 'CASHED_OUT', 'EXPIRED']),
-    pumpCount: z.int().min(0),
+    pumpCount: z.int().min(0).max(rules.maxPumps),
     settlementReason: settlementReasonSchema.nullable(),
     payoutCents: centsSchema,
   }),

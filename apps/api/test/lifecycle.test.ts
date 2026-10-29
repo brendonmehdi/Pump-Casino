@@ -184,6 +184,29 @@ describe('commitment rotation', () => {
   });
 });
 
+describe('client address behind a proxy', () => {
+  it('ignores X-Forwarded-For entries a client adds itself', async () => {
+    const proxied = await createHarness({ TRUST_PROXY: 'uniquelocal', RATE_LIMIT_PER_MINUTE: '2' });
+    try {
+      // The trusted proxy (10.0.0.2) appends the real client address; the client tries to
+      // dodge the limit by putting a fresh fake address in front each time.
+      const statuses = [];
+      for (const fake of ['1.1.1.1', '2.2.2.2', '3.3.3.3']) {
+        const response = await proxied.app.inject({
+          method: 'GET',
+          url: '/api/wallet',
+          remoteAddress: '10.0.0.2',
+          headers: { 'x-forwarded-for': `${fake}, 203.0.113.7` },
+        });
+        statuses.push(response.statusCode);
+      }
+      expect(statuses).toEqual([401, 401, 429]);
+    } finally {
+      await proxied.close();
+    }
+  });
+});
+
 describe('operations', () => {
   it('reports health', async () => {
     const response = await harness.app.inject({ method: 'GET', url: '/api/health' });

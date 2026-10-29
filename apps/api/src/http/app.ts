@@ -8,6 +8,7 @@ import Fastify, { type FastifyError, type FastifyInstance, type FastifyRequest }
 import type { AppConfig } from '../config';
 import { DomainError } from '../services/errors';
 import type { GameService } from '../services/game-service';
+import { loggableError } from './loggable-error';
 import { registerApiRoutes } from './routes';
 
 export interface AppDependencies {
@@ -75,7 +76,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   });
 
   app.addHook('onRequest', (request, _reply, done) => {
-    if (MUTATING_METHODS.has(request.method) && isCrossSite(request, config.allowedOrigins)) {
+    if (MUTATING_METHODS.has(request.method) && isCrossSite(request)) {
       done(new DomainError('ORIGIN_REJECTED', 'Cross-site requests are not allowed'));
       return;
     }
@@ -85,7 +86,7 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
   app.setErrorHandler((error: FastifyError | DomainError, request, reply) => {
     const { code, message } = describeError(error);
     const status = ERROR_STATUS[code];
-    if (status >= 500) request.log.error({ err: error }, 'request failed');
+    if (status >= 500) request.log.error({ error: loggableError(error) }, 'request failed');
     return reply.code(status).send(errorPayload(code, message, request));
   });
 
@@ -124,11 +125,11 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
  * browsers label cross-site requests with Sec-Fetch-Site and Origin; either one marking the
  * request as coming from another site rejects it. Non-browser clients send neither.
  */
-function isCrossSite(request: FastifyRequest, allowedOrigins: readonly string[]): boolean {
+function isCrossSite(request: FastifyRequest): boolean {
   const fetchSite = request.headers['sec-fetch-site'];
   if (fetchSite !== undefined && fetchSite !== 'same-origin' && fetchSite !== 'none') return true;
   const origin = request.headers.origin;
-  if (origin === undefined || allowedOrigins.includes(origin)) return false;
+  if (origin === undefined) return false;
   // Host headers rarely carry a default port, but URL() always drops one; compare like for like.
   const requestHost = request.host.replace(/:(80|443)$/, '');
   try {

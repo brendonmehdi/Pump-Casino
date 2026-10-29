@@ -48,7 +48,12 @@ export class GameService {
 
   async getState(playerId: string): Promise<GameState> {
     await this.resolveExpiry(playerId);
-    return loadGameState(this.db, playerId, null);
+    // One snapshot for wallet, round and commitment, so a cash-out committing in another tab
+    // can't produce a response mixing the finished round with the pre-payout balance.
+    return this.db.transaction((tx) => loadGameState(tx, playerId, null), {
+      isolationLevel: 'repeatable read',
+      accessMode: 'read only',
+    });
   }
 
   async getWallet(playerId: string): Promise<Wallet> {

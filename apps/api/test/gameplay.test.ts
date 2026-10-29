@@ -240,5 +240,7 @@ describe('history', () => {
     const client = await Client.create(harness);
     expect((await client.get('/api/history?limit=500')).statusCode).toBe(400);
     expect((await client.get('/api/history?limit=abc')).statusCode).toBe(400);
+    // nonce is a 32-bit column: a larger cursor is a validation error, not a database error
+    expect((await client.get('/api/history?cursor=2147483648')).statusCode).toBe(400);
   });
 });
