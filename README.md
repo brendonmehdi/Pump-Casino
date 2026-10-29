@@ -6,8 +6,8 @@ before cent rounding (which only ever rounds down).
 
 Play money only, with no cash value.
 
-- **Live demo:** _not deployed yet._ The Railway account needs its owner's login. The production
-  image is built and tested; the remaining steps are in [`SETUP_REQUIRED.md`](SETUP_REQUIRED.md).
+- **Live demo:** **https://pump-casino.onrender.com**. It runs on Render's free plan, so after
+  15 idle minutes the first visit takes about a minute while the server wakes up.
 - **Stack:** TypeScript end to end: React 19, Vite, Tailwind and Motion; Fastify 5; PostgreSQL 18
   with Drizzle; Zod contracts shared by both sides; Vitest, fast-check and Playwright.
 
@@ -76,15 +76,24 @@ pnpm --filter @pump/web dev       # game on http://localhost:5173 (proxies /api)
 
 Environment variables are validated at startup (`apps/api/src/config.ts`); see `.env.example`.
 
-## Deploy (Railway)
+## Deploy (Render)
 
-`Dockerfile` builds one image in which Fastify serves the API and the built web app on the same
-origin. `railway.json` runs `node apps/api/dist/migrate.js` before each deploy and
-health-checks `/api/health`. Set `DATABASE_URL` (a reference to Railway's PostgreSQL),
-`NODE_ENV=production` and `TRUST_PROXY` (the addresses of Railway's edge proxy, so rate limits
-see real client addresses and can't be dodged with a forged `X-Forwarded-For`). Step-by-step
-instructions are in
-[`SETUP_REQUIRED.md`](SETUP_REQUIRED.md).
+[`render.yaml`](render.yaml) is a Render Blueprint with two parts:
+
+- **The game:** one Docker web service. Fastify serves the API and the built web app on one
+  origin.
+- **PostgreSQL 18:** on the free plan, in the same region, reachable only over Render's
+  private network.
+
+The image runs the migrations at every start, before the server, because free instances have
+no pre-deploy step. The migrations skip anything already applied and take a lock, so repeated
+or overlapping starts are safe. `/api/health` (which also pings the database) is the health
+check.
+
+`TRUST_PROXY=loopback,uniquelocal,cloudflare` lets rate limits see each visitor's real address
+through Cloudflare and Render's proxies, while forged `X-Forwarded-For` entries are ignored.
+This was measured on the live service, not assumed. Setup, verification results, free-plan
+limits and how to redeploy are in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## How it's built
 
@@ -168,12 +177,16 @@ refund, and the seed is revealed in your history like any other round. Why this 
 - **Anonymous cookie sessions.** No sign-up friction, but clearing cookies starts a new wallet
   and there's no cross-device recovery.
 - **In-memory rate limiting.** Enough for one instance; scaling out would need a shared store.
+- **Free hosting.** Render's free plan costs nothing, but the server sleeps when idle and the
+  free database expires 30 days after creation (2026-11-28). That's fine for a demo, not for
+  real use.
 - **Sound is synthesised, not recorded.** It keeps the app tiny and original but is less rich
   than designed audio.
 
 ## With more time
 
-- Deploy (blocked only on the Railway login) and add uptime monitoring.
+- Move to paid Render plans (no sleeping, backups, a database that doesn't expire), connect
+  Render to GitHub for automatic deploys, and add uptime monitoring.
 - Keep seeds in a dedicated secret store instead of the main database, and prune old
   idempotency records on a schedule.
 - Load-test the API against a shared rate-limit store and run multiple instances.
@@ -186,13 +199,19 @@ This project was built in one continuous Claude Code session (Claude Opus 5.5), 
 repository owner's written brief. Wall-clock time from the first document read (00:06 EDT,
 2026-10-29) to the final commit (02:30 EDT) was **about 2 hours 25 minutes**. That
 covers planning, the engine and proofs, database, API, web client, tests, an independent review
-with fixes, an accessibility scan with fixes, Docker/CI, and the docs. Deployment is still pending the Railway login. The owner's own
-time writing the brief and reviewing the result isn't included; see [`AI_USAGE.md`](AI_USAGE.md)
-for who did what.
+with fixes, an accessibility scan with fixes, Docker/CI, and the docs.
+
+Deployment was a short follow-up the same day, after Railway turned out to be unavailable for a
+new account. It ran from the owner's request to use Render (11:31 EDT) to the final deployment
+commit (12:24 EDT), **about 53 minutes**. That covers the Render configuration,
+migrations at start, the production smoke tests, the live deploy and its verification, the two
+proxy-trust fixes, and these docs. The total is **about 3 hours 18 minutes**
+of agent time. The owner's own time writing the brief and reviewing the result isn't included;
+see [`AI_USAGE.md`](AI_USAGE.md) for who did what.
 
 ## More
 
 [`docs/MATH.md`](docs/MATH.md) · [`docs/FAIRNESS.md`](docs/FAIRNESS.md) ·
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/DATABASE.md`](docs/DATABASE.md) ·
-[`docs/API.md`](docs/API.md) · [`docs/QA.md`](docs/QA.md) · [`docs/UX_RESEARCH.md`](docs/UX_RESEARCH.md) ·
+[`docs/API.md`](docs/API.md) · [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) · [`docs/QA.md`](docs/QA.md) · [`docs/UX_RESEARCH.md`](docs/UX_RESEARCH.md) ·
 [`docs/ASSETS.md`](docs/ASSETS.md) · [`AI_USAGE.md`](AI_USAGE.md)

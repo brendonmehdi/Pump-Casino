@@ -103,7 +103,10 @@ your rounds, and your own next request resolves the expiry first.
 
 ## Operations
 
-- **Migrations:** `node apps/api/dist/migrate.js` (Railway pre-deploy command). The test suite
+- **Migrations:** `node apps/api/dist/migrate.js` runs at every container start, before the
+  server, because Render's free instances have no pre-deploy step. Applied migrations are
+  skipped, an advisory lock serialises instances starting at once, and connecting is retried
+  while a fresh database starts up (`apps/api/test/migrations.test.ts`). The test suite also
   rebuilds its database from an empty schema on every run, which proves the migrations apply
   cleanly from zero.
 - **Connection pool:** `pg.Pool` (default 10, `DATABASE_POOL_MAX`), 5 s connect timeout. Idle
@@ -111,9 +114,10 @@ your rounds, and your own next request resolves the expiry first.
 - **Restart safety:** nothing lives only in memory, so a restart loses no round, wallet or
   idempotency record (tested by rebuilding the app on the same database mid-round). Rate-limit
   counters are in memory and reset on restart.
-- **Backups:** Railway's managed PostgreSQL provides backups. Restore by pointing
-  `DATABASE_URL` at the restored instance. The ledger is append-only, so a balance can always be
-  audited from it.
+- **Backups:** the live database is on Render's free plan, which has no backups and expires on
+  2026-11-28 (`SETUP_REQUIRED.md`). Paid plans add backups; restore by pointing `DATABASE_URL`
+  at the restored instance. The ledger is append-only, so a balance can always be audited from
+  it.
 - **Retention:** `action_requests` grows with every mutation. A scheduled delete of rows older
   than a few days would be safe, since clients only retry for seconds, but it isn't needed at
   this scale.

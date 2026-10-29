@@ -77,6 +77,8 @@ The rules exist in exactly one place.
 ## Deployment
 
 One Docker image (`Dockerfile`): Fastify serves the API and the built web app on the same
-origin, so cookies are first-party and no CORS is needed. Railway runs migrations as a
-pre-deploy step and health-checks `/api/health`. Configuration is validated at startup
-(`apps/api/src/config.ts`); the process refuses to start with bad settings.
+origin, so cookies are first-party and no CORS is needed. The container runs the (idempotent,
+lock-protected) migrations at every start and then the server. Render runs it from
+`render.yaml` next to a private PostgreSQL database and health-checks `/api/health`.
+Configuration is validated at startup (`apps/api/src/config.ts`); the process refuses to start
+with bad settings. Details and live verification: `docs/DEPLOYMENT.md`.

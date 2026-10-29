@@ -4,16 +4,20 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 
 ## Current state
 
-- **Done and verified:** every requirement in `IMPLEMENTATION_PLAN.md` except the live URL.
-  That means the engine, contracts, database, API, web client with all bonus features, E2E
-  across three browser profiles, CI (green on GitHub), an independent adversarial review with
-  all findings fixed, a secrets audit of the full history, the Docker image and Railway config
-  (verified locally), and all docs.
-- **Blocked:** T9.2 / D2, the Railway deploy. It needs the owner's `railway login`
-  (`SETUP_REQUIRED.md`).
-- **Exact next task:** once logged in, create the Railway project and PostgreSQL, set the
-  variables, deploy, run the production smoke checks against the public URL, put the URL in the
-  README, commit and push.
+- **Done and verified:** every requirement in `IMPLEMENTATION_PLAN.md`, including the live URL.
+  That covers:
+  - the engine, contracts, database, API, and web client with all bonus features;
+  - E2E across three browser profiles, and CI (green on GitHub);
+  - an independent adversarial review, with all findings fixed;
+  - a secrets audit of the full history, and all docs;
+  - the deployment to Render: https://pump-casino.onrender.com (`render.yaml`), verified live
+    (`docs/DEPLOYMENT.md`).
+- **Blocked:** nothing.
+- **Owner decisions pending** (`SETUP_REQUIRED.md`):
+  - The free database expires on 2026-11-28 unless upgraded.
+  - Connecting Render to GitHub for automatic deploys is optional.
+- **Exact next task:** none required. To ship a change: push, then use Render's Manual sync or
+  Manual Deploy, and run `tools/smoke-production.mjs` against the URL.
 
 ## Environment facts
 
@@ -24,8 +28,15 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 - A native PostgreSQL 18 service also runs on port 5434 (unknown credentials, unused).
 - TypeScript pinned to `~6.0.3` (typescript-eslint supports `<6.1`; TS 7 is `latest`).
 - Playwright browsers (Chromium, WebKit) installed under `%LOCALAPPDATA%\ms-playwright`.
-- The Chrome extension cannot capture screenshots of the user's window (timeouts), so visual
-  review uses Playwright screenshots (a scratch script, not in the repo).
+- **Chrome extension.** It can't capture screenshots of the user's window (timeouts; the window
+  reports a 0×0 viewport). DOM reading, form input and JS clicks do work, and drove the Render
+  dashboard. Tab ids change after navigations, so re-read the tab context. Render's live-log
+  page can hang the tab, so open a fresh tab if it does. Visual review uses Playwright
+  screenshots (scratch scripts, not in the repo).
+- **Render.** The Blueprint is `exs-dbhmnuajnfac73adbrkg`, the web service
+  `srv-dbhmpfgn74is73efidcg` and the database `dpg-dbhmouon74is73efgnv0-a`, all in
+  "Brendons Workspace". Render isn't connected to GitHub, so pushes need a Manual sync or a
+  Manual Deploy.
 - `@fastify/static` with `wildcard: false` registers routes at startup: restart any long-running
   server after `pnpm --filter @pump/web build`, or new asset hashes will 404.
 
@@ -33,11 +44,12 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 
 | Check                                          | Result                                                                               |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Engine / contracts / web unit / API            | 105 / 73 / 5 / 68 tests passing                                                      |
+| Engine / contracts / web unit / API            | 105 / 73 / 5 / 73 tests passing                                                      |
 | E2E (desktop Chromium, Pixel 7, iPhone WebKit) | 41 / 41 (incl. axe-core WCAG scans)                                                  |
 | Lint, typecheck, format                        | clean                                                                                |
 | GitHub Actions (incl. E2E on Linux)            | green on every push to main                                                          |
 | Production Docker image                        | migrations, health, SPA, cookie flags, restart persistence checked by hand           |
+| Live service (Render)                          | API smoke 30/30; restart and redeploy resume 12/12 each; browser smoke 12/12         |
 | Mutation checks                                | rounding mutant: 1,249,612 failures; lock mutants: up to 6/12 concurrency tests fail |
 
 ## Architectural decisions (see IMPLEMENTATION_PLAN.md §1 and docs/)
@@ -59,6 +71,9 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 4. A missing `AudioContext` aborted the Bet click in WebKit (E2E).
 5. The first version of the exhaustive sweep called `expect()` in its inner loop (25 s → 1.7 s).
 6. A keyboard E2E test typed into the client-seed field (test bug; the app was right).
+7. **Deployment.** I assumed Render's proxy connects from a private address (`uniquelocal`). The
+   live logs showed `127.0.0.1`, and then Cloudflare edges, so rate limits weren't per visitor.
+   Fixed in two measured steps (`docs/DEPLOYMENT.md`).
 
 ## Time log (wall clock, America/New_York, 2026-10-29)
 
@@ -71,3 +86,9 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 - 02:15 independent review: 11 findings, all fixed and tested; landscape layout fix
 - 02:23 final audit; secrets audit of full history clean
 - 02:28 axe-core accessibility scan: 2 WCAG issues found and fixed
+- 11:31 the owner moved the deployment from Railway to Render; Render docs researched
+- 11:47 migrations at container start (tested); production smoke tooling
+- 11:52 `render.yaml` pushed; Blueprint applied from the owner's Render dashboard
+- 11:58 first deploy live; API smoke 30/30
+- 12:14 proxy trust corrected in two measured steps (loopback, then Cloudflare ranges)
+- 12:17 restart and redeploy persistence verified; browser smoke 12/12 on 3 devices

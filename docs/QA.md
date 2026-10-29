@@ -5,15 +5,18 @@ every push to `main` (see `.github/workflows/ci.yml`).
 
 ## Test inventory
 
-| Suite                   | Where                       | Tests | What it proves                                                                                                                                                                                                                                                                               |
-| ----------------------- | --------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Engine                  | `packages/engine/test`      |   105 | Exact 97% at all 25 points; exhaustive floor + RTP check of 2.5M (bet, pump) cases; fairness vectors from an independent HMAC; rejection sampling; state machine; fast-check properties; 100k-round simulation; independent verifier agrees on 300 random rounds and refuses malformed input |
-| Contracts               | `packages/contracts/test`   |    73 | Every malformed input class is rejected (NaN, ∞, negatives, >2 dp, whitespace, separators, overflow, unknown fields); output schemas refuse a leaked seed or pop point                                                                                                                       |
-| API on PostgreSQL       | `apps/api/test`             |    68 | Database constraints; gameplay; concurrency races; idempotency; session isolation; CSRF; no secret leakage; 24 h expiry (including racing a cash-out); restart persistence; verification; rotation; rate limits (forged X-Forwarded-For ignored); config refusals; secret-free error logs    |
-| Web unit                | `apps/web/src/**/*.test.ts` |     5 | Auto-bet stop rules (profit, loss limit before the bet, balance, round count)                                                                                                                                                                                                                |
-| End to end (Playwright) | `apps/web/e2e`              |    41 | Production build + real API + PostgreSQL on desktop Chromium, Pixel 7 (Chromium) and iPhone 14 (WebKit); axe-core WCAG 2.1 A/AA scans of the game, verify and history screens                                                                                                                |
+| Suite                   | Where                       | Tests | What it proves                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------------- | --------------------------- | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Engine                  | `packages/engine/test`      |   105 | Exact 97% at all 25 points; exhaustive floor + RTP check of 2.5M (bet, pump) cases; fairness vectors from an independent HMAC; rejection sampling; state machine; fast-check properties; 100k-round simulation; independent verifier agrees on 300 random rounds and refuses malformed input                                                                                       |
+| Contracts               | `packages/contracts/test`   |    73 | Every malformed input class is rejected (NaN, ∞, negatives, >2 dp, whitespace, separators, overflow, unknown fields); output schemas refuse a leaked seed or pop point                                                                                                                                                                                                             |
+| API on PostgreSQL       | `apps/api/test`             |    73 | Database constraints; gameplay; concurrency races; idempotency; session isolation; CSRF; no secret leakage; 24 h expiry (including racing a cash-out); restart persistence; verification; rotation; rate limits (forged X-Forwarded-For ignored, Render + Cloudflare chain); config refusals; secret-free error logs; migrations safe to repeat, overlap and wait for the database |
+| Web unit                | `apps/web/src/**/*.test.ts` |     5 | Auto-bet stop rules (profit, loss limit before the bet, balance, round count)                                                                                                                                                                                                                                                                                                      |
+| End to end (Playwright) | `apps/web/e2e`              |    41 | Production build + real API + PostgreSQL on desktop Chromium, Pixel 7 (Chromium) and iPhone 14 (WebKit); axe-core WCAG 2.1 A/AA scans of the game, verify and history screens                                                                                                                                                                                                      |
 
-That is **251 unit/integration tests and 41 end-to-end tests**.
+That is **256 unit/integration tests and 41 end-to-end tests**. Two more suites run against a
+deployed site rather than a local one: `tools/smoke-production.mjs` (30 API checks, plus 12
+after a restart) and `apps/web/e2e/live.smoke.ts` (4 journeys on each of the 3 browsers). Their
+results on the live service are in [Production verification](#production-verification-render).
 
 ## Commands
 
@@ -26,17 +29,18 @@ pnpm build && pnpm test:e2e
 
 ## Results of the final local run (2026-10-29)
 
-| Check                                                   | Result                                                                               |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Prettier                                                | all files formatted                                                                  |
-| ESLint (strict, type-aware, React hooks/compiler rules) | 0 problems                                                                           |
-| TypeScript (4 packages, strict)                         | 0 errors                                                                             |
-| Engine                                                  | 105 / 105 passed                                                                     |
-| Contracts                                               | 73 / 73 passed                                                                       |
-| Web unit                                                | 5 / 5 passed                                                                         |
-| API integration                                         | 68 / 68 passed                                                                       |
-| E2E                                                     | 41 / 41 passed (no retries)                                                          |
-| Production Docker image                                 | built; migrations, health, SPA, cookie flags and restart persistence checked by hand |
+| Check                                                   | Result                                                                                |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Prettier                                                | all files formatted                                                                   |
+| ESLint (strict, type-aware, React hooks/compiler rules) | 0 problems                                                                            |
+| TypeScript (4 packages, strict)                         | 0 errors                                                                              |
+| Engine                                                  | 105 / 105 passed                                                                      |
+| Contracts                                               | 73 / 73 passed                                                                        |
+| Web unit                                                | 5 / 5 passed                                                                          |
+| API integration                                         | 73 / 73 passed                                                                        |
+| E2E                                                     | 41 / 41 passed (no retries)                                                           |
+| Production Docker image                                 | built; migrations at start, health, SPA, cookie flags and restart persistence checked |
+| Live service on Render                                  | see [Production verification](#production-verification-render)                        |
 
 ## Do the tests have teeth? (mutation checks)
 
@@ -80,6 +84,32 @@ fixed, with a test where one applies:
 | `ALLOWED_ORIGINS` could never take effect                                                              | Removed; the app is same-origin by design                                                                   |
 | `MATH.md` miscounted rounds reaching pump 25                                                           | Corrected                                                                                                   |
 
+## Production verification (Render)
+
+Run against https://pump-casino.onrender.com on 2026-10-29. Full detail is in
+`docs/DEPLOYMENT.md`.
+
+| Check                                                              | Result                                                         |
+| ------------------------------------------------------------------ | -------------------------------------------------------------- |
+| API smoke test (`tools/smoke-production.mjs`)                      | 30/30 on the first deploy and on the final commit `78a29ef`    |
+| Open round across a redeploy, then across Render's Restart service | 12/12 each: same balance and round, cashed out, verified       |
+| Browser smoke test on desktop Chromium, Pixel 7 and iPhone 14      | 12/12; each device's first journey has a clean console         |
+| HTTPS redirect, HSTS, CSP, cookie flags, immutable assets          | All as designed                                                |
+| Client address behind Cloudflare and Render                        | The visitor's own address; forged headers ignored (log probes) |
+
+Two deployment defects were found on the live service and fixed:
+
+| Defect                                                                                                                                        | Caught by                                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Render's proxy reaches the app from `127.0.0.1`, which `TRUST_PROXY=uniquelocal` doesn't cover, so every visitor shared one rate-limit bucket | Marked requests, then reading the logged address |
+| With loopback trusted, the app keyed limits on a Cloudflare edge address that changed per request; fixed with Cloudflare's published ranges   | The live rate-limit counter, then the logs       |
+
+Neither let a client spoof its address. Each was a stricter, less precise limit.
+
+The browser console on the live site shows one harmless CSP report: at startup Zod probes
+whether `Function('')` is allowed so it can compile validators. The CSP correctly blocks it,
+and Zod falls back to its normal path.
+
 ## Network check: nothing leaks early
 
 `apps/web/e2e/fairness.spec.ts` records every `/api/` response a real browser receives while
@@ -90,8 +120,12 @@ and the contract schema refuses to serialise an active round with a seed.
 
 ## Known limitations
 
-- **Not yet deployed.** Railway needs the owner's login (`SETUP_REQUIRED.md`). The production
-  image has been built and exercised locally instead.
+- **Free hosting.** The live service sleeps after 15 idle minutes, and its free database
+  expires on 2026-11-28 (`SETUP_REQUIRED.md`).
+- **Not tested on a physical iPhone.** Phones were tested with Playwright's Pixel 7 (Chromium)
+  and iPhone 14 (WebKit) emulation. On Windows, Playwright's WebKit build draws the variable
+  display font at its thinnest instance and skips the action bar's backdrop blur, although the
+  computed styles match Chromium's, which renders both correctly.
 - **Rate limits are in memory, per instance.** That's fine for one instance; several would
   need a shared store.
 - **`action_requests` is never pruned.** That's harmless at this scale; a periodic delete of

@@ -63,7 +63,7 @@ Each item names where it is satisfied once done. "PDF" = original assignment, "M
 ### Deliverables (PDF, MB §17)
 
 - [x] D1 Public GitHub repo with incremental history (no squash)
-- [!] D2 Live URL (Railway + persistent Postgres): blocked on Railway login; production image verified locally
+- [x] D2 Live URL: https://pump-casino.onrender.com (Render + PostgreSQL; Railway wasn't available for a new account). Verified live: API and browser smoke tests, restart persistence, proxy trust
 - [x] D3 README: run locally, architecture, pop curve + why, tradeoffs, more-time list, honest hours
 - [x] D4 AI_USAGE.md with one real, observed AI mistake
 - [x] D5 docs/MATH, FAIRNESS, DATABASE, ARCHITECTURE, API, UX_RESEARCH, QA, ASSETS
@@ -84,7 +84,7 @@ Each item names where it is satisfied once done. "PDF" = original assignment, "M
 | Identity                | Anonymous session: 32-byte random token in an HttpOnly, SameSite=Strict cookie; only SHA-256(token) stored.                                                                                     |
 | Concurrency             | One transaction per mutation; lock order player → round; optimistic `version` required on pump/cashout; idempotency keys stored per player; DB constraints as second line of defence.           |
 | Abandoned rounds        | Expire after 24 h; wager forfeited; seed revealed; resolved lazily under the same locks.                                                                                                        |
-| Stack                   | pnpm workspaces · TypeScript strict · Fastify 5 · Zod · Drizzle + PostgreSQL · React + Vite + Tailwind + Motion + TanStack Query · Vitest + fast-check · Playwright · Railway.                  |
+| Stack                   | pnpm workspaces · TypeScript strict · Fastify 5 · Zod · Drizzle + PostgreSQL · React + Vite + Tailwind + Motion + TanStack Query · Vitest + fast-check · Playwright · Render (was Railway).     |
 
 ---
 
@@ -161,7 +161,7 @@ Each item names where it is satisfied once done. "PDF" = original assignment, "M
 
 ### Phase 9 — Release
 
-- [x] **T9.1 Deployment config**: Dockerfile, `railway.json`, migrate-on-deploy, health check.
-- [!] **T9.2 Railway deploy + production smoke** (expected blocker: Railway login).
+- [x] **T9.1 Deployment config**: Dockerfile, migrate-on-start, health check; `render.yaml` Blueprint (replaced `railway.json`).
+- [x] **T9.2 Render deploy + production smoke**: free web service + PostgreSQL in Virginia; 30/30 API smoke, 12/12 browser smoke on 3 devices, open round survives redeploy and restart, client address verified behind Cloudflare (`docs/DEPLOYMENT.md`).
 - [x] **T9.3 Docs**: README, AI_USAGE.md, docs/ARCHITECTURE.md, docs/QA.md, honest hours.
 - [x] **T9.4 Final audit** against this checklist, push, handoff report.
