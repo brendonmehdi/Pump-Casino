@@ -61,7 +61,7 @@ export function Balloon({ pressure, mood, pulseKey, straining, reducedMotion }: 
 
   return (
     <div
-      className="relative mx-auto aspect-[200/280] w-full max-w-[min(54vw,19rem,38dvh)]"
+      className="relative mx-auto aspect-[200/280] w-full max-w-[min(54vw,19rem,38dvh)] [@media(max-height:520px)]:w-[24dvh]"
       aria-hidden="true"
     >
       <AnimatePresence>

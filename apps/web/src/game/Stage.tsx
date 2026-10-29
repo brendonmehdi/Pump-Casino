@@ -29,7 +29,10 @@ export function Stage() {
   const pressure = round ? round.pumpCount / round.maxPumps : 0;
 
   return (
-    <section aria-label="Balloon" className="relative flex flex-col items-center gap-1 pt-1">
+    <section
+      aria-label="Balloon"
+      className="relative flex flex-col items-center gap-1 pt-1 [@media(max-height:520px)]:flex-row [@media(max-height:520px)]:justify-center [@media(max-height:520px)]:gap-6"
+    >
       {/* The room warms as the pressure rises: tension without flashing the screen. */}
       <div
         aria-hidden="true"
@@ -40,7 +43,7 @@ export function Stage() {
         }}
       />
       <Readout round={round} />
-      <div className="relative w-full">
+      <div className="relative w-full [@media(max-height:520px)]:w-auto">
         <Balloon
           pressure={pressure}
           mood={moodFor(round)}
@@ -74,10 +77,10 @@ function Readout({ round }: { readonly round: PublicRound | null }) {
           : 'text-ink';
 
   return (
-    <div className="flex min-h-[7rem] flex-col items-center justify-end text-center lg:min-h-[9rem]">
+    <div className="flex min-h-[7rem] flex-col items-center justify-end text-center lg:min-h-[9rem] [@media(max-height:520px)]:min-h-0">
       <motion.p
         key={round?.status === 'CASHED_OUT' ? `${round.id}-won` : 'readout'}
-        className={`font-display tabular leading-[0.9] font-[800] ${tone} text-[clamp(3.5rem,13vw,7.5rem)] transition-[font-stretch] duration-300`}
+        className={`font-display tabular leading-[0.9] font-[800] ${tone} text-[clamp(3.5rem,13vw,7.5rem)] [@media(max-height:520px)]:text-[3.25rem] transition-[font-stretch] duration-300`}
         style={{ fontStretch: `${(72 + 78 * pressure).toFixed(0)}%` }}
         initial={round?.status === 'CASHED_OUT' ? { scale: 0.9 } : false}
         animate={{ scale: 1 }}
@@ -144,7 +147,7 @@ function RoundStats({ round }: { readonly round: PublicRound | null }) {
     );
   }
   return (
-    <dl className="grid h-16 w-full max-w-md grid-cols-2 items-center gap-4 text-center">
+    <dl className="grid h-16 w-full max-w-md grid-cols-2 items-center gap-4 text-center [@media(max-height:520px)]:w-auto [@media(max-height:520px)]:grid-cols-1 [@media(max-height:520px)]:h-auto">
       <div>
         <dt className="text-xs text-ink-muted">Cash out now</dt>
         <dd className="text-xl font-semibold tabular text-ink" data-testid="cashout-value">

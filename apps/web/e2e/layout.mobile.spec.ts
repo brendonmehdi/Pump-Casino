@@ -34,6 +34,15 @@ test('stays usable in landscape', async ({ page }) => {
   await openGame(page);
   await expectNoHorizontalScroll(page);
   await expectThumbTarget(page, 'bet-button');
+  await placeBet(page, '1');
+  // Sideways, the balloon and the numbers must still be on screen above the action bar.
+  const balloon = page.getByRole('region', { name: 'Balloon' }).locator('svg').first();
+  await expect(balloon).toBeInViewport({ ratio: 0.9 });
+  await expect(page.getByTestId('multiplier')).toBeInViewport();
+  await expect(page.getByTestId('next-risk')).toBeInViewport();
+  const bar = await page.getByTestId('pump-button').boundingBox();
+  const shape = await balloon.boundingBox();
+  expect((shape?.y ?? 0) + (shape?.height ?? 0)).toBeLessThanOrEqual(bar?.y ?? 0);
 });
 
 test('the menu offers navigation and sound controls on small screens', async ({ page }) => {
