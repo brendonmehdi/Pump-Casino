@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import { Link, NavLink } from 'react-router';
+import { Link, NavLink, useLocation } from 'react-router';
 import { useGame } from '../game/gameContext';
 import { money } from '../lib/format';
 import { usePreferences } from '../prefs/preferencesContext';
@@ -68,11 +68,29 @@ function Balance({ cents }: { readonly cents: string }) {
 function SettingsMenu() {
   const prefs = usePreferences();
   const volumeId = useId();
+  const menu = useRef<HTMLDetailsElement>(null);
+  const { pathname } = useLocation();
   const closeOnEscape = (event: KeyboardEvent<HTMLDetailsElement>) => {
     if (event.key === 'Escape') event.currentTarget.open = false;
   };
+  // On phones this menu also holds the page links: close it once you've gone somewhere.
+  useEffect(() => {
+    if (menu.current) menu.current.open = false;
+  }, [pathname]);
+  useEffect(() => {
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      const details = menu.current;
+      if (details?.open && event.target instanceof Node && !details.contains(event.target)) {
+        details.open = false;
+      }
+    };
+    document.addEventListener('pointerdown', closeOnOutsidePointer);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePointer);
+    };
+  }, []);
   return (
-    <details className="relative" onKeyDown={closeOnEscape}>
+    <details ref={menu} className="relative" onKeyDown={closeOnEscape}>
       <summary
         className="flex size-10 cursor-pointer list-none items-center justify-center rounded-full border border-ink/12 text-ink-muted hover:text-ink marker:hidden"
         aria-label="Sound, motion and shortcuts"

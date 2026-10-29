@@ -64,4 +64,6 @@ test('the menu offers navigation and sound controls on small screens', async ({ 
     .getByRole('link', { name: 'Verify' })
     .click();
   await expect(page.getByRole('heading', { name: 'Verify a round' })).toBeVisible();
+  // Navigating closes the menu instead of leaving it over the new page.
+  await expect(page.getByTestId('sound-toggle')).toBeHidden();
 });

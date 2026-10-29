@@ -26,3 +26,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# Python bytecode from tools/rtp_analysis.py
+__pycache__/
