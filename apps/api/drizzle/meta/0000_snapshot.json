@@ -1,0 +1,715 @@
+{
+  "id": "6713f2de-c81e-4523-a8b2-c201ade93d43",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.action_requests": {
+      "name": "action_requests",
+      "schema": "",
+      "columns": {
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "idempotency_key": {
+          "name": "idempotency_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "action": {
+          "name": "action",
+          "type": "player_action",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "request_hash": {
+          "name": "request_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status_code": {
+          "name": "status_code",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response_body": {
+          "name": "response_body",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "action_requests_player_id_players_id_fk": {
+          "name": "action_requests_player_id_players_id_fk",
+          "tableFrom": "action_requests",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "action_requests_player_id_idempotency_key_pk": {
+          "name": "action_requests_player_id_idempotency_key_pk",
+          "columns": [
+            "player_id",
+            "idempotency_key"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.players": {
+      "name": "players",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "session_token_hash": {
+          "name": "session_token_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "balance_cents": {
+          "name": "balance_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "next_nonce": {
+          "name": "next_nonce",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "players_session_token_hash_unique": {
+          "name": "players_session_token_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "session_token_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "players_balance_non_negative": {
+          "name": "players_balance_non_negative",
+          "value": "\"players\".\"balance_cents\" >= 0"
+        },
+        "players_next_nonce_positive": {
+          "name": "players_next_nonce_positive",
+          "value": "\"players\".\"next_nonce\" >= 1"
+        },
+        "players_session_hash_length": {
+          "name": "players_session_hash_length",
+          "value": "octet_length(\"players\".\"session_token_hash\") = 32"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.rounds": {
+      "name": "rounds",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nonce": {
+          "name": "nonce",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rules_version": {
+          "name": "rules_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "client_seed": {
+          "name": "client_seed",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bet_cents": {
+          "name": "bet_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "auto_cashout_hundredths": {
+          "name": "auto_cashout_hundredths",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "round_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ACTIVE'"
+        },
+        "settlement_reason": {
+          "name": "settlement_reason",
+          "type": "settlement_reason",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pump_count": {
+          "name": "pump_count",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "pop_point": {
+          "name": "pop_point",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "payout_cents": {
+          "name": "payout_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ended_at": {
+          "name": "ended_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "rounds_one_active_per_player": {
+          "name": "rounds_one_active_per_player",
+          "columns": [
+            {
+              "expression": "player_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"rounds\".\"status\" = 'ACTIVE'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "rounds_player_nonce": {
+          "name": "rounds_player_nonce",
+          "columns": [
+            {
+              "expression": "player_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "nonce",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "rounds_id_seed_commitments_id_fk": {
+          "name": "rounds_id_seed_commitments_id_fk",
+          "tableFrom": "rounds",
+          "tableTo": "seed_commitments",
+          "columnsFrom": [
+            "id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "rounds_player_id_players_id_fk": {
+          "name": "rounds_player_id_players_id_fk",
+          "tableFrom": "rounds",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "rounds_bet_positive": {
+          "name": "rounds_bet_positive",
+          "value": "\"rounds\".\"bet_cents\" > 0"
+        },
+        "rounds_pump_count_non_negative": {
+          "name": "rounds_pump_count_non_negative",
+          "value": "\"rounds\".\"pump_count\" >= 0"
+        },
+        "rounds_pop_point_positive": {
+          "name": "rounds_pop_point_positive",
+          "value": "\"rounds\".\"pop_point\" is null or \"rounds\".\"pop_point\" >= 1"
+        },
+        "rounds_version_non_negative": {
+          "name": "rounds_version_non_negative",
+          "value": "\"rounds\".\"version\" >= 0"
+        },
+        "rounds_expiry_after_start": {
+          "name": "rounds_expiry_after_start",
+          "value": "\"rounds\".\"expires_at\" > \"rounds\".\"started_at\""
+        },
+        "rounds_active_shape": {
+          "name": "rounds_active_shape",
+          "value": "\"rounds\".\"status\" <> 'ACTIVE' or (\"rounds\".\"ended_at\" is null and \"rounds\".\"payout_cents\" is null\n        and \"rounds\".\"settlement_reason\" is null\n        and (\"rounds\".\"pop_point\" is null or \"rounds\".\"pump_count\" < \"rounds\".\"pop_point\"))"
+        },
+        "rounds_cashed_out_shape": {
+          "name": "rounds_cashed_out_shape",
+          "value": "\"rounds\".\"status\" <> 'CASHED_OUT' or (\"rounds\".\"ended_at\" is not null and \"rounds\".\"payout_cents\" > 0\n        and \"rounds\".\"settlement_reason\" is not null and \"rounds\".\"pump_count\" >= 1\n        and (\"rounds\".\"pop_point\" is null or \"rounds\".\"pump_count\" < \"rounds\".\"pop_point\"))"
+        },
+        "rounds_popped_shape": {
+          "name": "rounds_popped_shape",
+          "value": "\"rounds\".\"status\" <> 'POPPED' or (\"rounds\".\"ended_at\" is not null and \"rounds\".\"payout_cents\" = 0\n        and \"rounds\".\"settlement_reason\" is null and \"rounds\".\"pop_point\" = \"rounds\".\"pump_count\" + 1)"
+        },
+        "rounds_expired_shape": {
+          "name": "rounds_expired_shape",
+          "value": "\"rounds\".\"status\" <> 'EXPIRED' or (\"rounds\".\"ended_at\" is not null and \"rounds\".\"payout_cents\" = 0\n        and \"rounds\".\"settlement_reason\" is null\n        and (\"rounds\".\"pop_point\" is null or \"rounds\".\"pump_count\" < \"rounds\".\"pop_point\"))"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.seed_commitments": {
+      "name": "seed_commitments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nonce": {
+          "name": "nonce",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "server_seed": {
+          "name": "server_seed",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "commitment": {
+          "name": "commitment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "commitment_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PREPARED'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "seed_commitments_one_prepared_per_player": {
+          "name": "seed_commitments_one_prepared_per_player",
+          "columns": [
+            {
+              "expression": "player_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"seed_commitments\".\"status\" = 'PREPARED'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "seed_commitments_player_nonce": {
+          "name": "seed_commitments_player_nonce",
+          "columns": [
+            {
+              "expression": "player_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "nonce",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "seed_commitments_player_id_players_id_fk": {
+          "name": "seed_commitments_player_id_players_id_fk",
+          "tableFrom": "seed_commitments",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "seed_commitments_seed_length": {
+          "name": "seed_commitments_seed_length",
+          "value": "octet_length(\"seed_commitments\".\"server_seed\") = 32"
+        },
+        "seed_commitments_commitment_hex": {
+          "name": "seed_commitments_commitment_hex",
+          "value": "\"seed_commitments\".\"commitment\" ~ '^[0-9a-f]{64}$'"
+        },
+        "seed_commitments_nonce_positive": {
+          "name": "seed_commitments_nonce_positive",
+          "value": "\"seed_commitments\".\"nonce\" >= 1"
+        },
+        "seed_commitments_resolution": {
+          "name": "seed_commitments_resolution",
+          "value": "(\"seed_commitments\".\"status\" = 'PREPARED') = (\"seed_commitments\".\"resolved_at\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.wallet_transactions": {
+      "name": "wallet_transactions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "round_id": {
+          "name": "round_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "entry_type": {
+          "name": "entry_type",
+          "type": "ledger_entry_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "balance_after_cents": {
+          "name": "balance_after_cents",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "wallet_one_grant_per_player": {
+          "name": "wallet_one_grant_per_player",
+          "columns": [
+            {
+              "expression": "player_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"wallet_transactions\".\"entry_type\" = 'INITIAL_GRANT'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "wallet_one_entry_per_round_and_type": {
+          "name": "wallet_one_entry_per_round_and_type",
+          "columns": [
+            {
+              "expression": "round_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entry_type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"wallet_transactions\".\"round_id\" is not null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "wallet_transactions_player": {
+          "name": "wallet_transactions_player",
+          "columns": [
+            {
+              "expression": "player_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "wallet_transactions_player_id_players_id_fk": {
+          "name": "wallet_transactions_player_id_players_id_fk",
+          "tableFrom": "wallet_transactions",
+          "tableTo": "players",
+          "columnsFrom": [
+            "player_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "wallet_transactions_round_id_rounds_id_fk": {
+          "name": "wallet_transactions_round_id_rounds_id_fk",
+          "tableFrom": "wallet_transactions",
+          "tableTo": "rounds",
+          "columnsFrom": [
+            "round_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "wallet_balance_after_non_negative": {
+          "name": "wallet_balance_after_non_negative",
+          "value": "\"wallet_transactions\".\"balance_after_cents\" >= 0"
+        },
+        "wallet_entry_shape": {
+          "name": "wallet_entry_shape",
+          "value": "(\"wallet_transactions\".\"entry_type\" = 'INITIAL_GRANT' and \"wallet_transactions\".\"round_id\" is null and \"wallet_transactions\".\"amount_cents\" > 0)\n        or (\"wallet_transactions\".\"entry_type\" = 'BET_DEBIT' and \"wallet_transactions\".\"round_id\" is not null and \"wallet_transactions\".\"amount_cents\" < 0)\n        or (\"wallet_transactions\".\"entry_type\" = 'PAYOUT_CREDIT' and \"wallet_transactions\".\"round_id\" is not null and \"wallet_transactions\".\"amount_cents\" > 0)"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.commitment_status": {
+      "name": "commitment_status",
+      "schema": "public",
+      "values": [
+        "PREPARED",
+        "CONSUMED",
+        "REVOKED"
+      ]
+    },
+    "public.ledger_entry_type": {
+      "name": "ledger_entry_type",
+      "schema": "public",
+      "values": [
+        "INITIAL_GRANT",
+        "BET_DEBIT",
+        "PAYOUT_CREDIT"
+      ]
+    },
+    "public.player_action": {
+      "name": "player_action",
+      "schema": "public",
+      "values": [
+        "START",
+        "PUMP",
+        "CASHOUT",
+        "ROTATE"
+      ]
+    },
+    "public.round_status": {
+      "name": "round_status",
+      "schema": "public",
+      "values": [
+        "ACTIVE",
+        "POPPED",
+        "CASHED_OUT",
+        "EXPIRED"
+      ]
+    },
+    "public.settlement_reason": {
+      "name": "settlement_reason",
+      "schema": "public",
+      "values": [
+        "MANUAL",
+        "AUTO_TARGET",
+        "LADDER_TOP"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

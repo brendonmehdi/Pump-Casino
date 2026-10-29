@@ -2,6 +2,9 @@ packages:
   - apps/*
   - packages/*
 
+allowBuilds:
+  esbuild: true # postinstall only verifies the platform binary
+
 # Shared dependency versions. Packages reference these with "catalog:".
 catalog:
   '@noble/hashes': ^2.4.0

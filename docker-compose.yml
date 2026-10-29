@@ -1,0 +1,21 @@
+# Local development database only. Production uses Railway's managed PostgreSQL.
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-pump}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pump_local_only}
+      POSTGRES_DB: ${POSTGRES_DB:-pump}
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-55432}:5432'
+    volumes:
+      - pump-pgdata:/var/lib/postgresql
+      - ./apps/api/docker/create-test-database.sql:/docker-entrypoint-initdb.d/10-create-test-database.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pump-pgdata:
