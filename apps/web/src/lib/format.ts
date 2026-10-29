@@ -6,6 +6,10 @@ export const money = (cents: string | bigint): string =>
 
 export const times = (multiplier: string): string => `${multiplier}×`;
 
+/** "1 round", "3 rounds". */
+export const plural = (count: number, word: string): string =>
+  `${count.toString()} ${count === 1 ? word : `${word}s`}`;
+
 export const chance = (basisPoints: number): string => formatBasisPoints(basisPoints);
 
 /** A probability as a percentage, floored to 2 dp so it never overstates the odds. */

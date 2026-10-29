@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { MultiplierField } from '../game/fields';
-import { money } from '../lib/format';
+import { money, plural } from '../lib/format';
 import { MAX_AUTO_ROUNDS, describeStop, type AutoBetConfig } from './autobet';
 import type { AutoBetDraft, DraftFields } from './useAutoBetDraft';
 import type { AutoBetController } from './useAutoBet';
@@ -170,10 +170,10 @@ export function AutoBetBar({
         data-testid="autobet-status"
       >
         {running
-          ? `Round ${(stats.roundsPlayed + 1).toString()} of ${config?.rounds.toString() ?? '?'}, ${net >= 0n ? 'up' : 'down'} ${money(net >= 0n ? net : -net)}`
+          ? `Round ${Math.min(stats.roundsPlayed + 1, config?.rounds ?? Infinity).toString()} of ${config?.rounds.toString() ?? '?'}, ${net >= 0n ? 'up' : 'down'} ${money(net >= 0n ? net : -net)}`
           : (blockedReason ??
             (stopReason
-              ? `${describeStop(stopReason)} ${stats.roundsPlayed.toString()} rounds, ${net >= 0n ? 'up' : 'down'} ${money(net >= 0n ? net : -net)}.`
+              ? `${describeStop(stopReason)} ${plural(stats.roundsPlayed, 'round')}, ${net >= 0n ? 'up' : 'down'} ${money(net >= 0n ? net : -net)}.`
               : 'Set your limits, then start.'))}
       </p>
     </div>

@@ -84,7 +84,7 @@ test('auto-bet stops at the loss limit before risking more', async ({ page, orac
   await page.getByTestId('auto-loss').fill('1');
   await page.getByTestId('autobet-start').click();
   await expect(page.getByTestId('autobet-status')).toContainText('loss limit', { timeout: 15_000 });
-  await expect(page.getByTestId('autobet-status')).toContainText('1 rounds, down $1.00');
+  await expect(page.getByTestId('autobet-status')).toContainText('1 round, down $1.00');
   await expect(page.getByTestId('balance')).toContainText('$9,999.00');
 });
 

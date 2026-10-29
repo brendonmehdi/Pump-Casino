@@ -15,7 +15,7 @@ import { Link, useParams } from 'react-router';
 import { ApiError, api } from '../api/client';
 import { useGame } from '../game/gameContext';
 import { shownCommitmentFor } from '../game/shownCommitments';
-import { chance, money, times } from '../lib/format';
+import { chance, money, plural, times } from '../lib/format';
 import { useDocumentTitle } from '../lib/useDocumentTitle';
 
 const REPO_FAIRNESS_DOC = 'https://github.com/brendonmehdi/Pump-Casino/blob/main/docs/FAIRNESS.md';
@@ -60,7 +60,7 @@ function FetchedRound({ roundId }: { readonly roundId: string }) {
         {code === 'ROUND_IN_PROGRESS'
           ? 'This round is still running. Its server seed is revealed the moment it ends.'
           : code === 'ROUND_NOT_FOUND' || code === 'VALIDATION_ERROR'
-            ? 'No finished round with this id belongs to your session. You can still paste revealed values below.'
+            ? 'No finished round with this id belongs to your session. To check values from elsewhere, paste them on the Verify page.'
             : 'Could not load this round. Check your connection and reload.'}
       </Callout>
     );
@@ -301,7 +301,7 @@ function describeOutcome(data: VerificationData): string {
     case 'POPPED':
       return `Popped on pump ${(pumpCount + 1).toString()}, paid $0.00`;
     case 'EXPIRED':
-      return `Expired after ${pumpCount.toString()} pumps, paid $0.00`;
+      return `Expired after ${plural(pumpCount, 'pump')}, paid $0.00`;
     case 'CASHED_OUT': {
       const how =
         settlementReason === 'LADDER_TOP'
@@ -309,7 +309,7 @@ function describeOutcome(data: VerificationData): string {
           : settlementReason === 'AUTO_TARGET'
             ? 'automatically'
             : 'manually';
-      return `Cashed out ${how} after ${pumpCount.toString()} pumps, paid ${money(payoutCents)}`;
+      return `Cashed out ${how} after ${plural(pumpCount, 'pump')}, paid ${money(payoutCents)}`;
     }
   }
 }
