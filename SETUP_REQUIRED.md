@@ -33,9 +33,13 @@ locally against PostgreSQL (migrations, health, cookie flags, restart persistenc
    | -------------- | ------------------------------------------------------ |
    | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (the private-network URL) |
    | `NODE_ENV`     | `production`                                           |
-   | `TRUST_PROXY`  | `true`                                                 |
+   | `TRUST_PROXY`  | `uniquelocal,100.64.0.0/10` (Railway's private ranges) |
 
    `PORT` comes from Railway. `COOKIE_SECURE` defaults to `true` in production.
+   `TRUST_PROXY` lists the proxies whose `X-Forwarded-For` is believed. `true` is refused because
+   it would let clients forge their address. After the first deploy, check that request logs show
+   real client addresses in `remoteAddress`. If they show a private address instead, add that
+   range; until then every client shares one rate-limit bucket, which is safe but stricter.
 
 4. **Settings → Networking → Generate domain.** The pre-deploy step runs the migrations and the
    health check waits for `/api/health`.

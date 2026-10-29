@@ -5,15 +5,15 @@ every push to `main` (see `.github/workflows/ci.yml`).
 
 ## Test inventory
 
-| Suite                   | Where                       | Tests | What it proves                                                                                                                                                                                                                                                   |
-| ----------------------- | --------------------------- | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Engine                  | `packages/engine/test`      |    98 | Exact 97% at all 25 points; exhaustive floor + RTP check of 2.5M (bet, pump) cases; fairness vectors from an independent HMAC; rejection sampling; state machine; fast-check properties; 100k-round simulation; independent verifier agrees on 300 random rounds |
-| Contracts               | `packages/contracts/test`   |    73 | Every malformed input class is rejected (NaN, ∞, negatives, >2 dp, whitespace, separators, overflow, unknown fields); output schemas refuse a leaked seed or pop point                                                                                           |
-| API on PostgreSQL       | `apps/api/test`             |    60 | Database constraints; gameplay; concurrency races; idempotency; session isolation; CSRF; no secret leakage; 24 h expiry (including racing a cash-out); restart persistence; verification; rotation; rate limits                                                  |
-| Web unit                | `apps/web/src/**/*.test.ts` |     5 | Auto-bet stop rules (profit, loss limit before the bet, balance, round count)                                                                                                                                                                                    |
-| End to end (Playwright) | `apps/web/e2e`              |    38 | Production build + real API + PostgreSQL on desktop Chromium, Pixel 7 (Chromium) and iPhone 14 (WebKit)                                                                                                                                                          |
+| Suite                   | Where                       | Tests | What it proves                                                                                                                                                                                                                                                                               |
+| ----------------------- | --------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Engine                  | `packages/engine/test`      |   105 | Exact 97% at all 25 points; exhaustive floor + RTP check of 2.5M (bet, pump) cases; fairness vectors from an independent HMAC; rejection sampling; state machine; fast-check properties; 100k-round simulation; independent verifier agrees on 300 random rounds and refuses malformed input |
+| Contracts               | `packages/contracts/test`   |    73 | Every malformed input class is rejected (NaN, ∞, negatives, >2 dp, whitespace, separators, overflow, unknown fields); output schemas refuse a leaked seed or pop point                                                                                                                       |
+| API on PostgreSQL       | `apps/api/test`             |    68 | Database constraints; gameplay; concurrency races; idempotency; session isolation; CSRF; no secret leakage; 24 h expiry (including racing a cash-out); restart persistence; verification; rotation; rate limits (forged X-Forwarded-For ignored); config refusals; secret-free error logs    |
+| Web unit                | `apps/web/src/**/*.test.ts` |     5 | Auto-bet stop rules (profit, loss limit before the bet, balance, round count)                                                                                                                                                                                                                |
+| End to end (Playwright) | `apps/web/e2e`              |    39 | Production build + real API + PostgreSQL on desktop Chromium, Pixel 7 (Chromium) and iPhone 14 (WebKit)                                                                                                                                                                                      |
 
-That is **236 unit/integration tests and 38 end-to-end tests**.
+That is **251 unit/integration tests and 39 end-to-end tests**.
 
 ## Commands
 
@@ -31,11 +31,11 @@ pnpm build && pnpm test:e2e
 | Prettier                                                | all files formatted                                                                  |
 | ESLint (strict, type-aware, React hooks/compiler rules) | 0 problems                                                                           |
 | TypeScript (4 packages, strict)                         | 0 errors                                                                             |
-| Engine                                                  | 98 / 98 passed                                                                       |
+| Engine                                                  | 105 / 105 passed                                                                     |
 | Contracts                                               | 73 / 73 passed                                                                       |
 | Web unit                                                | 5 / 5 passed                                                                         |
-| API integration                                         | 60 / 60 passed                                                                       |
-| E2E                                                     | 38 / 38 passed (twice in a row, no retries)                                          |
+| API integration                                         | 68 / 68 passed                                                                       |
+| E2E                                                     | 39 / 39 passed (no retries)                                                          |
 | Production Docker image                                 | built; migrations, health, SPA, cookie flags and restart persistence checked by hand |
 
 ## Do the tests have teeth? (mutation checks)
@@ -58,6 +58,26 @@ Each mutation was reverted immediately and the suites re-run green.
 | A missing `AudioContext` threw inside the Bet click handler, so no bet was ever sent in WebKit        | WebKit E2E project                        |
 | Pressure Ladder overflowed the desktop viewport instead of scrolling                                  | Screenshot review                         |
 | A keyboard E2E test typed a space into the client-seed field (the app behaved correctly)              | E2E failure analysis                      |
+
+## Independent review
+
+After the features were done, a separate agent reviewed the whole codebase adversarially
+(read-only) and reported findings with failure scenarios. It found no path to double payment,
+wrong payouts, a negative balance or a secret leaking to a client. Everything it did find was
+fixed, with a test where one applies:
+
+| Finding                                                                                                | Fix                                                                                                         |
+| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Stopping auto-bet mid-round left an open round with no Pump/Cash out controls, so it could only expire | Manual controls appear for any open round when auto-bet isn't running; E2E test added                       |
+| `TRUST_PROXY=true` trusts a forged `X-Forwarded-For`, so rate limits could be dodged                   | Only explicit proxy addresses are accepted, `true` is refused; test proves spoofed entries share one bucket |
+| Drizzle errors embed bound parameters, so a failed insert could log a seed or pop point                | 5xx errors are logged through `loggableError` (kind and Postgres code only); unit test                      |
+| History cursor above 2³¹−1 caused a database error (500)                                               | Cursor bounded in the contract; API test                                                                    |
+| `GET /pump/current` read wallet, round and commitment in separate statements (possible torn snapshot)  | One REPEATABLE READ, read-only transaction                                                                  |
+| A 5xx after commit, or a slow stale refetch, could leave the UI showing old state                      | Resync on uncertain errors; in-flight fetches cancelled before applying an action's result                  |
+| Pasting verify JSON with `pumpCount` > 25 crashed the page                                             | Bounded in the contract, guarded in the page, plus an app-wide error boundary                               |
+| The Node verifier accepted inputs the spec forbids (active rounds, out-of-range bets)                  | It now enforces the spec's encoding and ranges; 7 tests                                                     |
+| `ALLOWED_ORIGINS` could never take effect                                                              | Removed; the app is same-origin by design                                                                   |
+| `MATH.md` miscounted rounds reaching pump 25                                                           | Corrected                                                                                                   |
 
 ## Network check: nothing leaks early
 

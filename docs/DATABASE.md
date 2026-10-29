@@ -71,6 +71,10 @@ followed by the matching ledger row with `balance_after_cents`. The balance ther
 equals the sum of the player's ledger, and the tests check that the running sum equals each
 `balance_after_cents` too.
 
+**Reads.** `GET /api/pump/current` reads wallet, round and next commitment in one
+`REPEATABLE READ` read-only transaction, so the three always come from the same moment even
+while another tab is acting.
+
 ## How each race is prevented
 
 | Race                                         | First line                                                     | Backstops                                       |

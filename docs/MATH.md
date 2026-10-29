@@ -172,7 +172,7 @@ with deterministic seeds (`serverSeed = SHA-256("pump-simulation|i")`), so every
 same rounds and anyone can reproduce the numbers below. Bets are $1,000, which keeps cent
 rounding negligible next to sampling noise. Pass criteria are 5σ bands, wide enough that a
 correct engine can't fail by chance, and narrow enough to catch a wrong hazard or multiplier at
-the frequently reached early rungs. High rungs are rare (102 rounds reached pump 25), so their
+the frequently reached early rungs. High rungs are rare (182 rounds reached pump 25 and 102 survived it), so their
 observed RTP is noisy by nature. That is why the exact proof, not the simulation, is the
 authority.
 

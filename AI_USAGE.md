@@ -8,14 +8,15 @@ features). **Claude Code (model: Claude Opus 5.5)** then did the work autonomous
 session: it planned, wrote all of the code, tests and documentation in this repository, ran the
 tests and committed incrementally. The owner reviews the result and owns the decisions in it.
 
-| Tool                          | Used for                                                                                                                                                                                                 |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Claude Code (Claude Opus 5.5) | Planning, code, tests, docs, git; driving the tools below                                                                                                                                                |
-| REA (MCP)                     | Attempted UX research on Stake's public Pump page. Every page stopped at a Cloudflare bot check, which was not bypassed, so `docs/UX_RESEARCH.md` is labelled secondhand. A sub-agent ran this research. |
-| Higgsfield (MCP)              | Read-only evaluation of its game/website builder and the account balance. Not used: see `docs/ASSETS.md`. No credits were spent.                                                                         |
-| Playwright                    | The E2E suite, plus screenshots for visual review                                                                                                                                                        |
-| Claude in Chrome              | Tried for visual review; screenshots timed out (the browser window was likely minimised), so Playwright was used instead                                                                                 |
-| Docker, GitHub CLI            | Local PostgreSQL, production image check, pushing and watching CI                                                                                                                                        |
+| Tool                           | Used for                                                                                                                                                                                                 |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code (Claude Opus 5.5)  | Planning, code, tests, docs, git; driving the tools below                                                                                                                                                |
+| REA (MCP)                      | Attempted UX research on Stake's public Pump page. Every page stopped at a Cloudflare bot check, which was not bypassed, so `docs/UX_RESEARCH.md` is labelled secondhand. A sub-agent ran this research. |
+| Higgsfield (MCP)               | Read-only evaluation of its game/website builder and the account balance. Not used: see `docs/ASSETS.md`. No credits were spent.                                                                         |
+| Claude Code sub-agent (review) | A fresh agent did a read-only adversarial review of the finished code. Its findings and fixes are in `docs/QA.md` (Independent review).                                                                  |
+| Playwright                     | The E2E suite, plus screenshots for visual review                                                                                                                                                        |
+| Claude in Chrome               | Tried for visual review; screenshots timed out (the browser window was likely minimised), so Playwright was used instead                                                                                 |
+| Docker, GitHub CLI             | Local PostgreSQL, production image check, pushing and watching CI                                                                                                                                        |
 
 **Inspiration vs implementation.** The Stake research shaped interaction rules only, such as
 "show next-pump risk beside the button" and "one meaning per hotkey". The visual design,

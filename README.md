@@ -81,7 +81,9 @@ Environment variables are validated at startup (`apps/api/src/config.ts`); see `
 `Dockerfile` builds one image in which Fastify serves the API and the built web app on the same
 origin. `railway.json` runs `node apps/api/dist/migrate.js` before each deploy and
 health-checks `/api/health`. Set `DATABASE_URL` (a reference to Railway's PostgreSQL),
-`NODE_ENV=production` and `TRUST_PROXY=true`. Step-by-step instructions are in
+`NODE_ENV=production` and `TRUST_PROXY` (the addresses of Railway's edge proxy, so rate limits
+see real client addresses and can't be dodged with a forged `X-Forwarded-For`). Step-by-step
+instructions are in
 [`SETUP_REQUIRED.md`](SETUP_REQUIRED.md).
 
 ## How it's built

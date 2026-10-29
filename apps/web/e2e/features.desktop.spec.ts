@@ -51,6 +51,27 @@ test('Stop halts auto-bet before the next bet', async ({ page }) => {
   expect(played.rounds.length).toBeLessThan(10);
 });
 
+test('stopping auto-bet mid-round hands the open round back to the player', async ({
+  page,
+  oracle,
+}) => {
+  await openGame(page);
+  await oracle.rigNextRound(page, null); // this round never pops
+  await page.getByTestId('mode-auto').click();
+  await page.getByTestId('bet-input').fill('1');
+  await page.getByTestId('auto-rounds').fill('5');
+  await page.getByTestId('auto-target').fill('100.00'); // first reached on pump 22
+  await page.getByTestId('autobet-start').click();
+  await expect(page.getByTestId('cashout-value')).toHaveText('$1.16', { timeout: 15_000 });
+  await page.getByTestId('autobet-stop').click();
+
+  await expect(page.getByText('Auto-bet is stopped and this round is still open.')).toBeVisible();
+  await page.getByTestId('cashout-button').click();
+  await expect(page.getByTestId('round-result')).toContainText('Won $');
+  await expect(page.getByTestId('autobet-start')).toBeVisible();
+  await expect(page.getByTestId('autobet-status')).toContainText('Stopped by you.');
+});
+
 test('auto-bet stops at the loss limit before risking more', async ({ page, oracle }) => {
   await openGame(page);
   await oracle.rigNextRound(page, 1);
