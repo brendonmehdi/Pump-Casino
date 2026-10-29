@@ -61,7 +61,9 @@ export function Balloon({ pressure, mood, pulseKey, straining, reducedMotion }: 
 
   return (
     <div
-      className="relative mx-auto aspect-[200/280] w-full max-w-[min(54vw,19rem,38dvh)] [@media(max-height:520px)]:w-[24dvh]"
+      // On desktop the balloon gets whatever height is left after the header, multiplier, stats
+      // and action bar (about 27rem), so Bet and Pump stay on screen on 720px-tall laptops.
+      className="relative mx-auto aspect-[200/280] w-full max-w-[min(54vw,19rem,38dvh)] lg:max-w-[max(9rem,min(19rem,calc((100dvh_-_27rem)/1.4)))] [@media(max-height:520px)]:w-[24dvh]"
       aria-hidden="true"
     >
       <AnimatePresence>
