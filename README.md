@@ -203,9 +203,9 @@ with fixes, an accessibility scan with fixes, Docker/CI, and the docs.
 
 Deployment was a short follow-up the same day, after Railway turned out to be unavailable for a
 new account. It ran from the owner's request to use Render (11:31 EDT) to the final deployment
-commit (12:24 EDT), **about 53 minutes**. That covers the Render configuration,
+commit (12:31 EDT), **about 60 minutes**. That covers the Render configuration,
 migrations at start, the production smoke tests, the live deploy and its verification, the two
-proxy-trust fixes, and these docs. The total is **about 3 hours 18 minutes**
+proxy-trust fixes, and these docs. The total is **about 3 hours 25 minutes**
 of agent time. The owner's own time writing the brief and reviewing the result isn't included;
 see [`AI_USAGE.md`](AI_USAGE.md) for who did what.
 
