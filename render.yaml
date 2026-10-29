@@ -32,10 +32,11 @@ services:
         fromDatabase:
           name: pump-postgres
           property: connectionString
-      # Render's proxies connect from private addresses; X-Forwarded-For is read from the right,
-      # so addresses a client adds itself are ignored. Never `true`.
+      # Requests reach the app from Render's proxy on 127.0.0.1, behind private-network hops.
+      # X-Forwarded-For is read from the right past these, so addresses a client adds itself
+      # are ignored (verified on the live service: docs/DEPLOYMENT.md). Never `true`.
       - key: TRUST_PROXY
-        value: uniquelocal
+        value: loopback,uniquelocal
 
 databases:
   - name: pump-postgres
