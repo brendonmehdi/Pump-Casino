@@ -1,0 +1,80 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/anybody/wdth.css';
+@import '@fontsource-variable/ibm-plex-sans/index.css';
+
+/*
+ * "Petrol & Latex": a deep petrol room lit by one spotlight. The balloon is the only loud
+ * element; everything else is a quiet instrument. Aqua is reserved for cashing out and wins.
+ */
+@theme {
+  --color-night: #061a1d;
+  --color-night-2: #0b262a;
+  --color-night-3: #12343a;
+  --color-night-4: #1a454c;
+  --color-ink: #e8f3ef;
+  --color-ink-muted: #9bbab4;
+  --color-ink-faint: #6a8a85;
+  --color-gauge: #ede3c8;
+  --color-latex: #ff8ba7;
+  --color-latex-hot: #ff3b47;
+  --color-win: #5ef0c8;
+  --color-win-deep: #0e6b56;
+  --color-loss: #7d918d;
+  --color-danger: #ff6b6f;
+
+  --font-display: 'Anybody Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'IBM Plex Sans Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    background-color: var(--color-night);
+  }
+
+  body {
+    min-height: 100dvh;
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 38%, #0f363b 0%, transparent 70%),
+      radial-gradient(ellipse 120% 90% at 50% 120%, #031012 0%, transparent 60%), var(--color-night);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Every changing number keeps its width so nothing shifts while it ticks. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gauge);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-win) 35%, transparent);
+  }
+}
+
+/* Honour the OS setting and the in-game "Reduce motion" switch alike. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+html[data-reduced-motion='true'] *,
+html[data-reduced-motion='true'] *::before,
+html[data-reduced-motion='true'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}

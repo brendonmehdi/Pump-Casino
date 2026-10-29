@@ -1,4 +1,6 @@
 import js from '@eslint/js';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
 import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -38,6 +40,17 @@ export default defineConfig(
       eqeqeq: ['error', 'always'],
       'no-console': 'error',
     },
+  },
+  {
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
+    languageOptions: { globals: globals.browser },
+  },
+  {
+    // Playwright discovers fixture dependencies by parsing the first parameter, which must be
+    // an object pattern even when a fixture has no dependencies (`async ({}, use) => …`).
+    files: ['apps/web/e2e/**/*.ts'],
+    rules: { 'no-empty-pattern': ['error', { allowObjectPatternsAsParameters: true }] },
   },
   {
     files: ['**/*.js', '**/*.mjs'],
