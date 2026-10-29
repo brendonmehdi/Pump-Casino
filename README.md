@@ -8,8 +8,8 @@ Play money only, with no cash value.
 
 - **Live demo:** _not deployed yet._ The Railway account needs its owner's login. The production
   image is built and tested; the remaining steps are in [`SETUP_REQUIRED.md`](SETUP_REQUIRED.md).
-- **Stack:** TypeScript end to end. React 19 + Vite + Tailwind + Motion, Fastify 5, PostgreSQL 18
-  - Drizzle, Zod contracts shared by both sides, Vitest + fast-check, and Playwright.
+- **Stack:** TypeScript end to end: React 19, Vite, Tailwind and Motion; Fastify 5; PostgreSQL 18
+  with Drizzle; Zod contracts shared by both sides; Vitest, fast-check and Playwright.
 
 ## The fun part: the Pressure Ladder
 
