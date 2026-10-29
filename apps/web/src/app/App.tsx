@@ -5,6 +5,7 @@ import { SettingsProvider } from '../game/SettingsProvider';
 import { HistoryPage } from '../history/HistoryPage';
 import { PreferencesProvider } from '../prefs/PreferencesProvider';
 import { VerifyPage } from '../verify/VerifyPage';
+import { ErrorBoundary } from './ErrorBoundary';
 import { Header } from './Header';
 
 export function App() {
@@ -15,13 +16,15 @@ export function App() {
           <GameProvider>
             <div className="flex min-h-dvh flex-col">
               <Header />
-              <Routes>
-                <Route path="/" element={<GamePage />} />
-                <Route path="/history" element={<HistoryPage />} />
-                <Route path="/verify" element={<VerifyPage />} />
-                <Route path="/verify/:roundId" element={<VerifyPage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <ErrorBoundary>
+                <Routes>
+                  <Route path="/" element={<GamePage />} />
+                  <Route path="/history" element={<HistoryPage />} />
+                  <Route path="/verify" element={<VerifyPage />} />
+                  <Route path="/verify/:roundId" element={<VerifyPage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </ErrorBoundary>
             </div>
           </GameProvider>
         </SettingsProvider>

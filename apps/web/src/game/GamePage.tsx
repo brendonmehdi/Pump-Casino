@@ -25,9 +25,12 @@ export function GamePage() {
   const [mode, setMode] = usePersistentState<Mode>('mode', () => 'manual', isMode);
   const roundActive = game.state?.round?.status === 'ACTIVE';
   const autoRunning = autoBet.status !== 'idle';
+  // An open round always gets Pump and Cash out, whatever the mode, unless auto-bet is
+  // driving it. Otherwise stopping auto-bet mid-round would leave no way to finish it.
+  const manualControls = mode === 'manual' || (roundActive && !autoRunning);
 
   useGameHotkeys({
-    enabled: mode === 'manual' && !autoRunning && game.phase === 'ready',
+    enabled: manualControls && !autoRunning && game.phase === 'ready',
     onPump: () => {
       unlockAudio();
       void game.pump();
@@ -46,11 +49,7 @@ export function GamePage() {
     return <BootScreen failed={game.phase === 'error'} onRetry={game.retryLoad} />;
 
   const settingsLocked = roundActive || autoRunning || game.pending !== null;
-  const autoBlocked = roundActive
-    ? 'Finish the open round before starting auto-bet.'
-    : settings.clientSeedError
-      ? 'Fix your client seed first.'
-      : null;
+  const autoBlocked = settings.clientSeedError ? 'Fix your client seed first.' : null;
 
   return (
     <main className="mx-auto grid w-full max-w-[1440px] gap-4 px-4 pb-44 lg:grid-cols-[19.5rem_minmax(0,1fr)_17.5rem] lg:gap-6 lg:px-6 lg:pb-8">
@@ -60,8 +59,15 @@ export function GamePage() {
         <Stage />
         <div className="fixed inset-x-0 bottom-0 z-20 border-t border-ink/10 bg-night/90 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur-md lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
           <div className="mx-auto w-full max-w-lg">
-            {mode === 'manual' ? (
-              <ActionBar locked={autoRunning} />
+            {manualControls ? (
+              <>
+                {mode === 'auto' && (
+                  <p className="mb-2 text-center text-xs text-ink-muted" role="status">
+                    Auto-bet is stopped and this round is still open. Finish it here.
+                  </p>
+                )}
+                <ActionBar locked={autoRunning} />
+              </>
             ) : (
               <AutoBetBar controller={autoBet} config={draft.config} blockedReason={autoBlocked} />
             )}
@@ -89,7 +95,7 @@ export function GamePage() {
                 type="button"
                 role="tab"
                 aria-selected={mode === option}
-                disabled={roundActive || autoRunning}
+                disabled={autoRunning}
                 onClick={() => {
                   setMode(option);
                 }}

@@ -53,6 +53,9 @@ export function GameProvider({ children }: { readonly children: ReactNode }) {
 
   const applyState = useCallback(
     (state: GameState) => {
+      // An action's response is newer than any GET /current still in flight; cancel those so a
+      // slow, older snapshot can't land afterwards and overwrite it.
+      void queryClient.cancelQueries({ queryKey: GAME_KEY });
       queryClient.setQueryData(GAME_KEY, state);
       const round = state.round;
       if (round && round.status !== 'ACTIVE') {
@@ -64,6 +67,12 @@ export function GameProvider({ children }: { readonly children: ReactNode }) {
     },
     [queryClient],
   );
+
+  /** Reloads state from the server when a failure leaves us unsure what was committed. */
+  const resync = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: GAME_KEY });
+    void queryClient.invalidateQueries({ queryKey: RECENT_KEY });
+  }, [queryClient]);
 
   const run = useCallback(
     async (
@@ -85,17 +94,25 @@ export function GameProvider({ children }: { readonly children: ReactNode }) {
       } catch (error) {
         if (error instanceof ApiError) {
           if (error.body.state) applyState(error.body.state);
+          // A 5xx (or any error without state) may have come after the action committed.
+          else resync();
           if (error.code === 'SESSION_REQUIRED') {
             void queryClient.invalidateQueries({ queryKey: SESSION_KEY });
           }
-          setNotice({ message: error.message, code: error.code });
+          setNotice({
+            message:
+              error.status >= 500
+                ? 'Something went wrong. Your balance and round were reloaded from the server.'
+                : error.message,
+            code: error.code,
+          });
           return { ok: false, reason: 'rejected', code: error.code };
         }
         setNotice({
           message: 'Lost connection to the server. Showing the latest saved state.',
           code: 'NETWORK',
         });
-        void queryClient.invalidateQueries({ queryKey: GAME_KEY });
+        resync();
         return { ok: false, reason: 'network' };
       } finally {
         inFlight.current = false;
@@ -103,7 +120,7 @@ export function GameProvider({ children }: { readonly children: ReactNode }) {
         setReconnecting(false);
       }
     },
-    [applyState, queryClient],
+    [applyState, queryClient, resync],
   );
 
   const start = useCallback(

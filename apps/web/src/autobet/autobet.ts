@@ -72,6 +72,6 @@ export function describeStop(reason: StopReason): string {
     case 'STOPPED':
       return 'Stopped by you.';
     case 'ERROR':
-      return 'Stopped: the server refused a request. Your balance is up to date.';
+      return 'Stopped: a request failed. The game is showing the latest saved state.';
   }
 }

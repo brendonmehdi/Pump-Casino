@@ -162,7 +162,9 @@ function Report({
 }) {
   const report: VerificationReport = verifyRound(PUMP_V1, toRevealed(data));
   const pastedHashAsSeed = data.serverSeed === data.commitment;
-  const reached = data.outcome.pumpCount > 0 ? ladderStep(PUMP_V1, data.outcome.pumpCount) : null;
+  const { pumpCount } = data.outcome;
+  const reached =
+    pumpCount > 0 && pumpCount <= PUMP_V1.rules.maxPumps ? ladderStep(PUMP_V1, pumpCount) : null;
   return (
     <section
       aria-label="Verification result"
