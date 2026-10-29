@@ -71,3 +71,22 @@ test('bets outside the limits are refused before they are sent', async ({ page }
   await expect(page.getByText('The maximum bet is $1,000')).toBeVisible();
   await expect(page.getByTestId('bet-button')).toBeDisabled();
 });
+
+test('between rounds the ladder previews payouts for the bet you are about to place', async ({
+  page,
+  oracle,
+}) => {
+  await openGame(page);
+  await oracle.rigNextRound(page, null);
+  await placeBet(page, '10');
+  await pump(page);
+  await page.getByTestId('cashout-button').click();
+  await expect(page.getByTestId('round-result')).toHaveText('Won $10.54');
+  const ladder = page.getByRole('list', {
+    name: 'Multiplier, pop chance and payout for each pump',
+  });
+  await page.getByTestId('bet-input').fill('100');
+  // Pump 1 on $100 pays floor(10,000¢ × 1.0543…) = $105.43, not the finished round's $10.54.
+  await expect(ladder).toContainText('$105.43');
+  await expect(ladder).not.toContainText('$10.54');
+});

@@ -23,8 +23,9 @@ export function PressureLadder() {
   const { reducedMotion } = usePreferences();
   const round = state?.round ?? null;
   const pumpCount = round?.pumpCount ?? 0;
-  const previewBet = round ? BigInt(round.betCents) : betCents;
   const live = round?.status === 'ACTIVE';
+  // During a round: that round's bet. Between rounds: the bet you're about to place.
+  const previewBet = live ? BigInt(round.betCents) : betCents;
   const remaining = PUMP_V1.rules.maxPumps - pumpCount;
   const listRef = useRef<HTMLOListElement>(null);
 
