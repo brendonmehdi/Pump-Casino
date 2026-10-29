@@ -121,6 +121,31 @@ test('keyboard: Space pumps, Enter cashes out, held keys never repeat', async ({
   await expect(page.getByTestId('round-result')).toHaveText('Won $1.16');
 });
 
+test('keyboard users can place a bet from the focused Bet button (WCAG 2.1.1)', async ({
+  page,
+  oracle,
+}) => {
+  await openGame(page);
+  await oracle.rigNextRound(page, null);
+  await page.getByTestId('bet-input').fill('1');
+  // Enter on the focused Bet button places exactly one bet.
+  const started = page.waitForResponse((r) => r.url().endsWith('/api/pump/start'));
+  await page.getByTestId('bet-button').focus();
+  await page.keyboard.press('Enter');
+  await started;
+  await expect(page.getByTestId('pump-button')).toBeVisible();
+  await expect(page.getByTestId('balance')).toContainText('$9,999.00');
+  // During the round the shortcuts apply as before: Space pumps once, Enter cashes out.
+  await page.keyboard.press('Space');
+  await expect(page.getByTestId('cashout-value')).toHaveText('$1.05');
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('round-result')).toHaveText('Won $1.05');
+  // Space on the focused Bet button works too, between rounds.
+  await page.getByTestId('bet-button').focus();
+  await page.keyboard.press('Space');
+  await expect(page.getByTestId('pump-button')).toBeVisible();
+});
+
 test('a pump whose response is lost is retried with the same key and applied once', async ({
   page,
   oracle,

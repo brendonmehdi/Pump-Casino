@@ -33,6 +33,7 @@ export function GamePage() {
 
   useGameHotkeys({
     enabled: manualControls && !autoRunning && game.phase === 'ready',
+    roundActive,
     onPump: () => {
       unlockAudio();
       void game.pump();

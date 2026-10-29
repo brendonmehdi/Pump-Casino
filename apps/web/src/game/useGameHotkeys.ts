@@ -2,21 +2,31 @@ import { useEffect, useRef } from 'react';
 
 interface Hotkeys {
   readonly enabled: boolean;
+  /** Between rounds the keys have no game action, so a focused button (Bet) activates normally. */
+  readonly roundActive: boolean;
   readonly onPump: () => void;
   readonly onCashOut: () => void;
   readonly onEscape: () => void;
 }
 
 /**
- * Space pumps and Enter cashes out — each key does one thing and neither ever places a bet.
- * Keys are ignored while typing (inputs, dialogs) and when focus is on a control outside the
- * game area, held keys never repeat an action, and the browser's own button activation is
- * suppressed so a focused button cannot fire the action a second time.
+ * Space pumps and Enter cashes out — each key does one thing, and as a shortcut neither ever
+ * places a bet. Keys are ignored while typing (inputs, dialogs) and when focus is on a control
+ * outside the game area, and held keys never repeat an action. During a round the browser's own
+ * button activation is suppressed, so a focused button cannot fire the action a second time.
+ * Between rounds a focused button keeps its normal keyboard activation, so keyboard users can
+ * press Enter or Space on Bet like any other button.
  */
-export function useGameHotkeys({ enabled, onPump, onCashOut, onEscape }: Hotkeys): void {
-  const handlers = useRef({ onPump, onCashOut, onEscape });
+export function useGameHotkeys({
+  enabled,
+  roundActive,
+  onPump,
+  onCashOut,
+  onEscape,
+}: Hotkeys): void {
+  const handlers = useRef({ roundActive, onPump, onCashOut, onEscape });
   useEffect(() => {
-    handlers.current = { onPump, onCashOut, onEscape };
+    handlers.current = { roundActive, onPump, onCashOut, onEscape };
   });
 
   useEffect(() => {
@@ -36,6 +46,7 @@ export function useGameHotkeys({ enabled, onPump, onCashOut, onEscape }: Hotkeys
       ) {
         return;
       }
+      if (!handlers.current.roundActive && event.target instanceof HTMLButtonElement) return;
       event.preventDefault();
       if (event.key === ' ') swallowSpaceUp = true;
       if (event.repeat) return;
