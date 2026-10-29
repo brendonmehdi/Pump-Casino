@@ -118,9 +118,20 @@ $1,000.00, 99,991 values) at all 25 cash-out points: 2.5 million cases. Each pay
 exact floor, and the expected return must be ≤ 97% (exact integer comparison). It runs in
 about 2 seconds.
 
+**Flooring is the best possible rule, not just a safe one.** For a given bet and pump, a payout
+of P cents returns S(n)·P/bet, which stays at or under 97% exactly when P ≤ bet × M(n). The
+largest whole number of cents that satisfies this is floor(bet × M(n)), and one cent more
+would pay over 97%. So no deterministic cent-valued rule can return more, for any bet at any
+point, without breaking the ceiling. The exhaustive test checks both halves (`isFloor`) for
+all 2.5 million cases.
+
 **What flooring costs.** Flooring loses less than one cent per cash-out, so the shortfall at
-pump _n_ is below `S(n) / bet_cents`. That is negligible for normal bets but real for the
-smallest ones, and we report it rather than pretend every bet returns exactly 97%:
+pump _n_ is S(n)·frac(bet × M(n)) / bet < S(n) / bet ≤ 0.92 / bet (bet in cents). That is under
+0.92 percentage points for a $1 bet and under 0.092 for $10, and it shrinks as the ladder climbs.
+It is negligible for normal bets but real for the smallest ones, so we report it rather than
+pretend every bet returns exactly 97%. These figures are exact and come from both the engine
+tests and an independent Python reference (`tools/rtp_analysis.py`), which agree to the part
+per million:
 
 | Bet       | Lowest RTP (at pump) | Highest RTP | Mean over the 25 points |
 | --------- | -------------------: | ----------: | ----------------------: |
@@ -134,23 +145,67 @@ smallest ones, and we report it rather than pretend every bet returns exactly 97
 | $100.00   |    96.9956% (pump 1) |    96.9999% |                96.9991% |
 | $1,000.00 |    96.9992% (pump 1) |    96.9999% |                96.9998% |
 
-The single worst case of all 2.5 million is a $0.10 bet cashed out after pump 3: it pays 12¢
-instead of 12.98¢, for an effective 89.67%. The test asserts this exact worst case.
+Over every permitted bet:
 
-**Alternatives considered.** A "rounding-friendly" ladder whose payouts land on whole cents
-even for a $0.10 bet needs every multiplier to have at most one decimal place. With pop chances
-in 1/10,000 steps, the only such first rungs up to 2× are 1.0× (a break-even first pump with a
-3% pop) and 2.0× (a 51.5% pop). After 1.0×, the lowest possible second rung is 1.6×, a 37.5% pop.
-That ladder is lumpy and harsh, the opposite of a steady rise in tension.
-Publishing 2-decimal multipliers and paying those would cost every bet size about 0.4% at
-pump 1. Randomised rounding (paying the fractional cent with matching probability) is exactly
-97% for all bets, but it makes identical cash-outs pay different amounts and needs a second
-provably-fair draw. Exact multipliers plus a floored payout is the simplest rule that never
-exceeds 97%.
+- **Bets of $1 or more** never return less than 96.18%, the worst being $1.10 on pump 1.
+- **Bets of $10 or more** never return less than 96.91%, and **bets of $100 or more** never less
+  than 96.99%.
+- **The mean** over all 2.5 million (bet, pump) pairs is 96.9989%.
+- **The single worst case** is a $0.10 bet cashed out after pump 3. It pays 12¢ instead of
+  12.98¢, for an effective 89.67%.
 
-**Display honesty.** Multipliers are displayed floored to 2 dp, so the number on screen never
-promises more than the payout. The cash-out amount on the button is the server's exact integer
-payout, computed by the same function that settles the round.
+The tests pin each of these.
+
+**Why no design can be exact for every bet.** Exactly 97% for a bet of b cents means
+S(n)·P(b) = 0.97·b, so P(b) = b × M(n). Since 10¢ and 11¢ are both permitted bets, and both
+payouts are whole cents, M(n) = P(11) − P(10) must be a whole number. Whole-number multipliers
+don't make a Pump game:
+
+- If M(1) = 1 (a 3% pop chance on pump 1), then M(2) ≥ 2 needs a pop chance of at least 50% on
+  pump 2.
+- If M(1) ≥ 2, pump 1 alone needs at least 51.5%.
+
+The pop chance must not fall from pump to pump, so every later pump also pops at least half the
+time and the multiplier at least doubles. That gives M(n) ≥ 2ⁿ⁻¹, which passes 1,000× by pump 11.
+The result is a coin-flip doubling game, not a 25-pump ladder of rising tension.
+
+So for any real ladder, some small bets must fall short of 97%. The only question is which bets,
+and by how much. "Rounding may push it just under 97%, but never over" is achievable; "exactly
+97% for every bet in whole cents" is not.
+
+**Alternatives compared, exactly.** `tools/rtp_analysis.py` evaluates each design over all
+99,991 bets × 25 points with exact fractions. Every design below is exactly 97% in theory, apart
+from E, and none ever exceeds 97%.
+
+| Design                                                           | Pop chances                                                    |     Top | Worst, any bet | Worst at $0.10 | Worst at $1.00 | Mean, all pairs | Cost                                                     |
+| ---------------------------------------------------------------- | -------------------------------------------------------------- | ------: | -------------: | -------------: | -------------: | --------------: | -------------------------------------------------------- |
+| **A. Shipped:** linear hazard, exact multipliers                 | 8.0% → 38.0%, +1.25 points per pump                            | 794.02× | 89.67% ($0.10) |         89.67% |         96.39% |        96.9989% | none                                                     |
+| B. Exact 2-dp multipliers (1.05×, 1.16×, …), pop chances derived | 7.6% → 38.0%, slightly uneven                                  | 794.01× | 90.23% ($0.10) |         90.23% |         97.00% |        96.9989% | new provably-fair sampler (non-basis-point thresholds)   |
+| C. Exact 1-dp multipliers (1.1×, 1.3×, 1.6×, …)                  | 11.8% → 32.5%: 20% by pump 4, then a 20–24% plateau to pump 17 | 956.90× | 91.83% ($0.13) |         97.00% |         97.00% |        96.9994% | new sampler, harsher first pump, flat middle, lower peak |
+| D. Basis points tuned to land just above C's multipliers         | as C                                                           | 956.90× | 91.83% ($0.13) |         96.98% |         96.98% |        96.9993% | same shape problems as C, and a new rules version        |
+| E. Shipped curve, paying the displayed 2-dp multiplier           | as A                                                           | 794.02× | 89.67% ($0.10) |         89.67% |         96.39% |        96.9073% | every bet loses up to 0.6 points before cent rounding    |
+
+C and D follow the shipped hazard where the 0.1× grid allows. The grid forces big early steps,
+and following the curve all the way would overshoot 1,000× (1,832× at pump 25). The tool
+therefore lowers the target for the last pump until the ladder fits under the cap.
+
+**Decision: keep A.** No design removes the small-bet shortfall, which is the cent itself: 1¢ is
+10% of a 10¢ bet. The alternatives only move exactness onto particular round bets. B helps whole
+dollars; C and D help multiples of 10¢, but bets like 11¢ and 13¢ still fall several points
+short. They pay for it either with a change to the provably-fair sampler (B, C), or with the
+rising-tension curve itself (C, D: an 11.8% first pump, a long flat middle and a lower peak). The
+mean return over all bets and points differs by under 0.001 points.
+
+A keeps the cleanest rule, 8% plus 1.25 points per pump, and a proof anyone can check in one
+line. If round small bets ever matter more than the curve, D is the cheapest upgrade: the same
+sampler with a new basis-point table, shipped as a new rules version so old rounds keep
+verifying under v1.
+
+**Display honesty.** Multipliers are displayed floored to 2 dp. The amount shown on the Cash Out
+button and in the ladder is the server's exact payout, computed by the same function that
+settles the round, so what you see is what you get. The 2-dp label can understate the payout:
+on a $10 bet, 1.05× suggests $10.50 but pays $10.54, because the real multiplier is 1.0543…. A
+cent amount derived from the label, rounded down, never exceeds the real payout.
 
 ## 5. Edge cases
 
@@ -217,4 +272,5 @@ authority.
 ```bash
 pnpm --filter @pump/engine test      # exact proof, exhaustive rounding sweep, simulation, fairness
 node tools/verify-round.mjs file.json   # independent check of any revealed round
+python tools/rtp_analysis.py            # exact RTP of every bet at every point, and the alternatives
 ```

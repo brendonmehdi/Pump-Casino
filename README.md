@@ -124,12 +124,24 @@ gentle (8%), the late pumps are dramatic, and the top rung pays 794.01×, so the
 in 25 pumps it needs about a 24% pop on _every_ pump, the first one included. Full tables,
 proof and simulation: [`docs/MATH.md`](docs/MATH.md).
 
-**Rounding: always down, to the cent.** Payouts are `floor(bet_cents × exact multiplier)`,
-because that is the only rule that can never push any bet over 97%. Rounding to nearest would
-pay a $0.10 bet 11¢ at pump 1, a 101.2% return. The test suite checks every permitted bet
-($0.10–$1,000, every cent) at every pump: 2.5 million cases. The cost of flooring is reported
-rather than hidden. It's under 0.01% for bets of $100 and above, but the $0.10 minimum bet
-returns between 89.67% and 97% depending on where you cash out.
+**Rounding: always down, to the cent.** Payouts are `floor(bet_cents × exact multiplier)`. That is
+the only rule that can never push any bet over 97%, and it is also the best possible one: for every
+bet at every point it pays the most whole cents that keep the return at or under 97%, because one
+cent more would exceed it. Rounding to the nearest cent would pay a $0.10 bet 11¢ at pump 1, a
+101.2% return. The test suite checks every permitted bet ($0.10–$1,000, every cent) at every pump:
+2.5 million cases.
+
+The cost of whole cents is reported rather than hidden:
+
+- Bets of $1 or more never return less than 96.18%, and bets of $10 or more never less than 96.91%.
+- The mean over every bet and pump is 96.9989%.
+- Only small bets feel it: the $0.10 minimum returns between 89.67% and 97% depending on where you
+  cash out, because 1¢ is 10% of the bet.
+
+No curve can avoid this. Exactly 97% for every whole-cent bet would need whole-number multipliers,
+which means coin-flip pumps. Ladders that make round small bets exact exist, but they flatten the
+rising tension. The proof, the exact comparison of five designs and an independent Python reference
+(`tools/rtp_analysis.py`) are in [`docs/MATH.md`](docs/MATH.md).
 
 **Cash-out before the first pump is refused.** A 1.00× refund there would be a 100%-RTP cash-out
 point, which breaks the 97% rule.
