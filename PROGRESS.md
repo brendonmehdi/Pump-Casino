@@ -102,4 +102,9 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 - 13:34 laptop layout fix (Bet below the fold at 1280×720)
 - 13:54 fairness fix: fresh client seed per bet, checked against the shown hash
 - 14:11 UX fixes: keyboard betting, ladder preview, phone action bar, menu, a11y, copy
-- 14:16 docs: final audit, requirements map, corrected claims; 282 + 50 tests green
+- 13:24 requirements traceability map (`docs/REQUIREMENTS.md`)
+- 13:57 API hardening (shared health ping, seed-rotation limit)
+- 14:19 docs: final audit report and corrected claims (`fb8802f`); 282 + 50 tests green
+- 14:24 `fb8802f` live after CI; upgrade resume 13/13, API smoke 30/30, browser smoke 12/12
+- 14:26 last audit commit (`0ac7724`); redeployed and verified at 14:32 (API smoke 30/30)
+- 14:38 documentation accuracy check: times verified against the session log and git

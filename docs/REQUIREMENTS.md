@@ -61,13 +61,13 @@ also checked on https://pump-casino.onrender.com (see [`docs/DEPLOYMENT.md`](DEP
 
 ## Final output
 
-| #   | Requirement                                                            | Where                                       | Result                            |
-| --- | ---------------------------------------------------------------------- | ------------------------------------------- | --------------------------------- |
-| F1  | A live URL                                                             | https://pump-casino.onrender.com            | Live: smoke tests pass            |
-| F2  | Public GitHub repo with real, incremental history (no squash)          | https://github.com/brendonmehdi/Pump-Casino | `git log`: incremental commits    |
-| F3  | README: run locally, architecture, curve and why, tradeoffs, more time | `README.md`                                 | Manual: all five sections present |
-| F4  | AI_USAGE.md: tools, delegated vs written, one place the AI was wrong   | `AI_USAGE.md`                               | Manual: present                   |
-| F5  | Honest hours                                                           | `README.md` "Hours spent"                   | Manual: from timestamps           |
+| #   | Requirement                                                            | Where                                       | Result                                                                      |
+| --- | ---------------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------- |
+| F1  | A live URL                                                             | https://pump-casino.onrender.com            | Live: smoke tests pass                                                      |
+| F2  | Public GitHub repo with real, incremental history (no squash)          | https://github.com/brendonmehdi/Pump-Casino | `git log`: incremental commits (a few share a timestamp; see `AI_USAGE.md`) |
+| F3  | README: run locally, architecture, curve and why, tradeoffs, more time | `README.md`                                 | Manual: all five sections present                                           |
+| F4  | AI_USAGE.md: tools, delegated vs written, one place the AI was wrong   | `AI_USAGE.md`                               | Manual: present                                                             |
+| F5  | Honest hours                                                           | `README.md` "Hours spent"                   | Manual: checked against the session log and git timestamps                  |
 
 ## Above & Beyond
 

@@ -8,7 +8,11 @@ A last review before submission. It:
 - attacks the backend;
 - checks the live site.
 
-The audit ran from 13:05 to about 16:00 EDT. Every fix is its own commit, with a test.
+The audit ran from the owner's request at 13:05 EDT to its last commit at 14:26. The redeploy
+was verified at 14:32. These times come from the session log and git timestamps.
+
+Code fixes went in as small, separate commits, each with tests. Documentation corrections went
+in as docs commits.
 
 ## Method
 

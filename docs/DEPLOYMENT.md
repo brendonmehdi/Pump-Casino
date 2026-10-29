@@ -171,5 +171,6 @@ first. Before the deploy, a session was saved on `78a29ef` with a round left ope
 | Browser smoke test: desktop Chromium, Pixel 7, iPhone 14       | 12/12                                                                                                     |
 | The audit's fixes on the live site                             | Bet fully visible at 1280×720; Enter on the focused Bet button bets; each bet uses a fresh client seed    |
 
-The final docs commit was deployed the same way afterwards, and its version checked again
-(see the README).
+Commit `0ac7724` (documentation only) was deployed the same way at 14:31. `/api/health`
+reported `0ac7724`, and the API smoke test passed 30/30. Later commits change documentation only
+and were not redeployed, so the running code is the same.

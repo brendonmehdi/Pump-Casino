@@ -215,8 +215,8 @@ refund, and the seed is revealed in your history like any other round. Why this 
 ## Hours spent
 
 This project was built in one continuous Claude Code session (Claude Opus 5.5), directed by the
-repository owner's written brief. Wall-clock time from the first document read (00:06 EDT,
-2026-10-29) to the final commit (02:30 EDT) was **about 2 hours 25 minutes**. That
+repository owner's written brief. Wall-clock time from the owner's instructions (00:06 EDT,
+2026-10-29) to that session's last commit (02:29 EDT) was **about 2 hours 23 minutes**. That
 covers planning, the engine and proofs, database, API, web client, tests, an independent review
 with fixes, an accessibility scan with fixes, Docker/CI, and the docs.
 
@@ -226,16 +226,20 @@ commit (12:31 EDT), **about 60 minutes**. That covers the Render configuration,
 migrations at start, the production smoke tests, the live deploy and its verification, the two
 proxy-trust fixes, and these docs.
 
-A final audit followed that afternoon, from the owner's request (13:05 EDT) to the final commit
-(14:26 EDT), **about 81 minutes**. It covered:
+A final audit followed that afternoon, from the owner's request (13:05 EDT) to its last commit
+(14:26 EDT), **about 81 minutes**. The redeploy of that commit was verified at 14:32. It covered:
 
 - an independent recomputation of the math, and the comparison of five curve designs;
 - an adversarial code review and a live UX audit by two separate agents;
 - the fixes listed in [`docs/FINAL_AUDIT.md`](docs/FINAL_AUDIT.md);
 - a verified redeploy.
 
-The total is **about 4 hours 46 minutes** of agent time. The owner's own time writing the brief
-and reviewing the result isn't included; see [`AI_USAGE.md`](AI_USAGE.md) for who did what.
+A last documentation check (14:38 to 14:41 EDT, **about 2 minutes**) verified these times
+against the session log and git history.
+
+The total is **about 4 hours 46 minutes** of agent time. All of the times above come
+from the session log and git timestamps. The owner's own time writing the brief and reviewing
+the result isn't included; see [`AI_USAGE.md`](AI_USAGE.md) for who did what.
 
 ## More
 
