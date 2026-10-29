@@ -17,56 +17,56 @@ Each item names where it is satisfied once done. "PDF" = original assignment, "M
 
 ### Game rules (PDF, MB §4)
 
-- [ ] R1 Bet starts a round with an empty balloon; min $0.10, max $1,000, $0.01 increments
-- [ ] R2 Pump raises multiplier and pop chance; Cash Out pays bet × current multiplier; pop loses bet
-- [ ] R3 Round ends on pop, cash out, or top of ladder (25 pumps or 1,000×, whichever first); top auto-cashes out
-- [ ] R4 New player gets $10,000, created on first visit, stored in DB
-- [ ] R5 RTP 97% at every cash-out point; rounding may push under, never over
-- [ ] R6 Pop curve designed and explained in README
-- [ ] R7 Cash Out before the first pump is rejected with a clear error (MB §5, §20)
+- [x] R1 Bet starts a round with an empty balloon; min $0.10, max $1,000, $0.01 increments
+- [x] R2 Pump raises multiplier and pop chance; Cash Out pays bet × current multiplier; pop loses bet
+- [x] R3 Round ends on pop, cash out, or top of ladder (25 pumps or 1,000×, whichever first); top auto-cashes out
+- [x] R4 New player gets $10,000, created on first visit, stored in DB
+- [x] R5 RTP 97% at every cash-out point; rounding may push under, never over
+- [x] R6 Pop curve designed and explained in README
+- [x] R7 Cash Out before the first pump is rejected with a clear error (MB §5, §20)
 
 ### Engine (PDF, MB §6)
 
-- [ ] E1 `packages/engine/src/PumpEngine.ts` pure: no DB/HTTP, randomness in → outcome out, deterministic
-- [ ] E2 Discriminated unions for states/actions; invalid transitions rejected; no `any`
+- [x] E1 `packages/engine/src/PumpEngine.ts` pure: no DB/HTTP, randomness in → outcome out, deterministic
+- [x] E2 Discriminated unions for states/actions; invalid transitions rejected; no `any`
 
 ### Endpoints (PDF, MB §9)
 
-- [ ] A1 `POST /api/pump/start`, `POST /api/pump/pump`, `POST /api/pump/cashout`, `GET /api/wallet`, `GET /api/history`
-- [ ] A2 Restore in-progress round after refresh: `GET /api/pump/current`
-- [ ] A3 `GET /api/rounds/:id/verify`, `GET /api/health`, `POST /api/session`, `POST /api/fairness/rotate`
+- [x] A1 `POST /api/pump/start`, `POST /api/pump/pump`, `POST /api/pump/cashout`, `GET /api/wallet`, `GET /api/history`
+- [x] A2 Restore in-progress round after refresh: `GET /api/pump/current`
+- [x] A3 `GET /api/rounds/:id/verify`, `GET /api/health`, `POST /api/session`, `POST /api/fairness/rotate`
 
 ### Frontend (PDF, MB §10)
 
-- [ ] F1 Balloon visibly inflates; pop animation
-- [ ] F2 Current multiplier + payout if cashed out now; chance next pump pops
-- [ ] F3 Running balance; last 10 rounds
-- [ ] F4 Loading / empty / error / reconnecting / disabled states; never fabricate results
+- [x] F1 Balloon visibly inflates; pop animation
+- [x] F2 Current multiplier + payout if cashed out now; chance next pump pops
+- [x] F3 Running balance; last 10 rounds
+- [x] F4 Loading / empty / error / reconnecting / disabled states; never fabricate results
 
 ### Key concepts (PDF)
 
-- [ ] K1 Math proof: exact RTP at all 25 points + 100k-round seeded simulation; integer cents; rounding direction explained
-- [ ] K2 Atomic bet+balance check; one active round; Pump vs Cash Out race; double Cash Out pays once; abandon rule defended
-- [ ] K3 Pop point decided at start from server seed; SHA-256 commitment before first pump; seed revealed at end; nothing leaks in Network tab
-- [ ] K4 Engine / service / HTTP separation; typed interfaces; no `any`
-- [ ] K5 Feel: rising tension, sharp wins, quiet losses, fast balance updates
+- [x] K1 Math proof: exact RTP at all 25 points + 100k-round seeded simulation; integer cents; rounding direction explained
+- [x] K2 Atomic bet+balance check; one active round; Pump vs Cash Out race; double Cash Out pays once; abandon rule defended
+- [x] K3 Pop point decided at start from server seed; SHA-256 commitment before first pump; seed revealed at end; nothing leaks in Network tab
+- [x] K4 Engine / service / HTTP separation; typed interfaces; no `any`
+- [x] K5 Feel: rising tension, sharp wins, quiet losses, fast balance updates
 
 ### Above & Beyond — all mandatory per MB §1, §13
 
-- [ ] B1 Auto Cash Out at target multiplier, settled server-side inside the Pump transaction
-- [ ] B2 Auto-bet: wager, rounds, target, stop-on-profit, stop-on-loss, stop-on-insufficient, pause, stop
-- [ ] B3 Keyboard: Space pump, Enter cash out, Escape cancel/close; ignored in inputs; no key-repeat
-- [ ] B4 Sound (pump, cash out, pop, top) with mute + volume; mobile layout
-- [ ] B5 Verify page: recompute any past round from its revealed seed, independently of server verdict
-- [ ] B6 Signature feature: 25-step Pressure Ladder
+- [x] B1 Auto Cash Out at target multiplier, settled server-side inside the Pump transaction
+- [x] B2 Auto-bet: wager, rounds, target, stop-on-profit, stop-on-loss, stop-on-insufficient, pause, stop
+- [x] B3 Keyboard: Space pump, Enter cash out, Escape cancel/close; ignored in inputs; no key-repeat
+- [x] B4 Sound (pump, cash out, pop, top) with mute + volume; mobile layout
+- [x] B5 Verify page: recompute any past round from its revealed seed, independently of server verdict
+- [x] B6 Signature feature: 25-step Pressure Ladder
 
 ### Deliverables (PDF, MB §17)
 
-- [ ] D1 Public GitHub repo with incremental history (no squash)
-- [ ] D2 Live URL (Railway + persistent Postgres)
-- [ ] D3 README: run locally, architecture, pop curve + why, tradeoffs, more-time list, honest hours
-- [ ] D4 AI_USAGE.md with one real, observed AI mistake
-- [ ] D5 docs/MATH, FAIRNESS, DATABASE, ARCHITECTURE, API, UX_RESEARCH, QA, ASSETS
+- [x] D1 Public GitHub repo with incremental history (no squash)
+- [!] D2 Live URL (Railway + persistent Postgres): blocked on Railway login; production image verified locally
+- [x] D3 README: run locally, architecture, pop curve + why, tradeoffs, more-time list, honest hours
+- [x] D4 AI_USAGE.md with one real, observed AI mistake
+- [x] D5 docs/MATH, FAIRNESS, DATABASE, ARCHITECTURE, API, UX_RESEARCH, QA, ASSETS
 
 ---
 
@@ -157,11 +157,11 @@ Each item names where it is satisfied once done. "PDF" = original assignment, "M
 
 - [x] **T8.1 E2E matrix**: desktop Chromium, mobile Chromium (Pixel), mobile WebKit (iPhone); network-leak test; reconnect/error.
 - [x] **T8.2 CI** GitHub Actions (lint, typecheck, format, unit, Postgres integration, build, E2E) green on `main`.
-- [~] **T8.3 Security + code review**: headers, cookies, CSRF, rate limits, log redaction, secrets audit, dead code, duplication, unused deps.
+- [x] **T8.3 Security + code review**: headers, cookies, CSRF, rate limits, log redaction, secrets audit, dead code, duplication, unused deps.
 
 ### Phase 9 — Release
 
 - [x] **T9.1 Deployment config**: Dockerfile, `railway.json`, migrate-on-deploy, health check.
 - [!] **T9.2 Railway deploy + production smoke** (expected blocker: Railway login).
 - [x] **T9.3 Docs**: README, AI_USAGE.md, docs/ARCHITECTURE.md, docs/QA.md, honest hours.
-- [ ] **T9.4 Final audit** against this checklist, push, handoff report.
+- [x] **T9.4 Final audit** against this checklist, push, handoff report.
