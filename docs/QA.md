@@ -11,9 +11,9 @@ every push to `main` (see `.github/workflows/ci.yml`).
 | Contracts               | `packages/contracts/test`   |    73 | Every malformed input class is rejected (NaN, ∞, negatives, >2 dp, whitespace, separators, overflow, unknown fields); output schemas refuse a leaked seed or pop point                                                                                                                       |
 | API on PostgreSQL       | `apps/api/test`             |    68 | Database constraints; gameplay; concurrency races; idempotency; session isolation; CSRF; no secret leakage; 24 h expiry (including racing a cash-out); restart persistence; verification; rotation; rate limits (forged X-Forwarded-For ignored); config refusals; secret-free error logs    |
 | Web unit                | `apps/web/src/**/*.test.ts` |     5 | Auto-bet stop rules (profit, loss limit before the bet, balance, round count)                                                                                                                                                                                                                |
-| End to end (Playwright) | `apps/web/e2e`              |    39 | Production build + real API + PostgreSQL on desktop Chromium, Pixel 7 (Chromium) and iPhone 14 (WebKit)                                                                                                                                                                                      |
+| End to end (Playwright) | `apps/web/e2e`              |    41 | Production build + real API + PostgreSQL on desktop Chromium, Pixel 7 (Chromium) and iPhone 14 (WebKit); axe-core WCAG 2.1 A/AA scans of the game, verify and history screens                                                                                                                |
 
-That is **251 unit/integration tests and 39 end-to-end tests**.
+That is **251 unit/integration tests and 41 end-to-end tests**.
 
 ## Commands
 
@@ -35,7 +35,7 @@ pnpm build && pnpm test:e2e
 | Contracts                                               | 73 / 73 passed                                                                       |
 | Web unit                                                | 5 / 5 passed                                                                         |
 | API integration                                         | 68 / 68 passed                                                                       |
-| E2E                                                     | 39 / 39 passed (no retries)                                                          |
+| E2E                                                     | 41 / 41 passed (no retries)                                                          |
 | Production Docker image                                 | built; migrations, health, SPA, cookie flags and restart persistence checked by hand |
 
 ## Do the tests have teeth? (mutation checks)
@@ -50,14 +50,15 @@ Each mutation was reverted immediately and the suites re-run green.
 
 ## Bugs the tests caught during development
 
-| Bug                                                                                                   | Caught by                                 |
-| ----------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| Zod v4 runs `.refine()` after a failed `.regex()`, so `BigInt("10.00")` threw: a 500 instead of a 400 | Contract test "rejects bet with decimals" |
-| `createRateLimit()`'s `isAllowed: false` misread as "over the limit"; every new player got a 429      | First manual smoke test (curl)            |
-| Helmet's CSP `upgrade-insecure-requests` made WebKit load `http://localhost` assets over https        | WebKit E2E project                        |
-| A missing `AudioContext` threw inside the Bet click handler, so no bet was ever sent in WebKit        | WebKit E2E project                        |
-| Pressure Ladder overflowed the desktop viewport instead of scrolling                                  | Screenshot review                         |
-| A keyboard E2E test typed a space into the client-seed field (the app behaved correctly)              | E2E failure analysis                      |
+| Bug                                                                                                                      | Caught by                                 |
+| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| Zod v4 runs `.refine()` after a failed `.regex()`, so `BigInt("10.00")` threw: a 500 instead of a 400                    | Contract test "rejects bet with decimals" |
+| `createRateLimit()`'s `isAllowed: false` misread as "over the limit"; every new player got a 429                         | First manual smoke test (curl)            |
+| Helmet's CSP `upgrade-insecure-requests` made WebKit load `http://localhost` assets over https                           | WebKit E2E project                        |
+| A missing `AudioContext` threw inside the Bet click handler, so no bet was ever sent in WebKit                           | WebKit E2E project                        |
+| Pressure Ladder overflowed the desktop viewport instead of scrolling                                                     | Screenshot review                         |
+| "2×" button's accessible name lacked its visible text (WCAG 2.5.3); the ladder could not be scrolled by keyboard (2.1.1) | axe-core scan in E2E                      |
+| A keyboard E2E test typed a space into the client-seed field (the app behaved correctly)                                 | E2E failure analysis                      |
 
 ## Independent review
 

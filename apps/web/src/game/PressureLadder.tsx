@@ -70,6 +70,7 @@ export function PressureLadder() {
       <ol
         ref={listRef}
         aria-label="Multiplier, pop chance and payout for each pump"
+        tabIndex={0}
         className="flex snap-x gap-1.5 overflow-x-auto pb-1 [scrollbar-width:thin] lg:min-h-0 lg:flex-col-reverse lg:overflow-x-visible lg:overflow-y-auto lg:pb-0"
       >
         {PUMP_V1.ladder.map((step) => {

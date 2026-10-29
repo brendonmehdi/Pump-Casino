@@ -48,7 +48,7 @@ export function BetAmountField({ disabled }: { readonly disabled: boolean }) {
             if (betCents !== null) setBetInput(scaleBet(betCents, 'half'));
           }}
           className="min-h-11 rounded-xl border border-ink/12 px-3 text-sm text-ink-muted hover:enabled:border-ink/30 disabled:opacity-40"
-          aria-label="Halve the bet"
+          aria-label="½: halve the bet"
         >
           ½
         </button>
@@ -59,7 +59,7 @@ export function BetAmountField({ disabled }: { readonly disabled: boolean }) {
             if (betCents !== null) setBetInput(scaleBet(betCents, 'double'));
           }}
           className="min-h-11 rounded-xl border border-ink/12 px-3 text-sm text-ink-muted hover:enabled:border-ink/30 disabled:opacity-40"
-          aria-label="Double the bet"
+          aria-label="2×: double the bet"
         >
           2×
         </button>
