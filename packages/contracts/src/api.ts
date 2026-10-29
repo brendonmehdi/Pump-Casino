@@ -218,7 +218,6 @@ export const ERROR_STATUS = {
   IDEMPOTENCY_KEY_REUSED: 422,
   RATE_LIMITED: 429,
   INTERNAL_ERROR: 500,
-  SERVICE_UNAVAILABLE: 503,
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_STATUS;

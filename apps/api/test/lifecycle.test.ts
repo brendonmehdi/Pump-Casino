@@ -168,6 +168,27 @@ describe('commitment rotation', () => {
     expect((await client.state()).nextCommitment).toEqual(nextCommitment);
   });
 
+  it('limits rotations to 20 a minute, separately from other requests', async () => {
+    // Each rotation stores a commitment, so it gets its own limit. A fresh app instance keeps
+    // rotations from other tests out of the count.
+    const limited = await createHarness();
+    try {
+      const client = await Client.create(limited);
+      const statuses: number[] = [];
+      for (let i = 0; i < 21; i += 1) {
+        const { nextCommitment } = await client.state();
+        const response = await client.post('/api/fairness/rotate', {
+          commitmentId: nextCommitment.id,
+        });
+        statuses.push(response.statusCode);
+      }
+      expect(statuses).toEqual([...Array<number>(20).fill(200), 429]);
+      expect((await client.get('/api/wallet')).statusCode).toBe(200);
+    } finally {
+      await limited.close();
+    }
+  });
+
   it('applies only one of two simultaneous rotations', async () => {
     const client = await Client.create(harness);
     const { nextCommitment } = await client.state();

@@ -22,10 +22,15 @@ import type { ActionRequestContext } from '../services/game-service';
 import type { ActionOutcome } from '../services/idempotency';
 import type { SessionPlayer } from '../services/sessions';
 import type { AppDependencies } from './app';
+import { cachedPing } from './cached-ping';
 
 const SESSION_COOKIE = 'pump_session';
 /** Browsers cap cookie lifetimes at 400 days. */
 const SESSION_MAX_AGE_SECONDS = 400 * 24 * 60 * 60;
+/** Health checks share one database ping per this interval. */
+const HEALTH_PING_TTL_MS = 2_000;
+/** Each rotation stores a commitment and a request record, so it gets its own, tighter limit. */
+const ROTATIONS_PER_MINUTE = 20;
 
 function parse<S extends z.ZodType>(schema: S, value: unknown, what: string): z.output<S> {
   const result = schema.safeParse(value);
@@ -42,6 +47,7 @@ function parse<S extends z.ZodType>(schema: S, value: unknown, what: string): z.
  */
 export const registerApiRoutes: FastifyPluginCallback<AppDependencies> = (app, deps, done) => {
   const { service, config } = deps;
+  const pingDatabase = cachedPing(deps.pingDatabase, HEALTH_PING_TTL_MS);
   const checkSessionCreationLimit = app.createRateLimit({
     max: config.sessionsPerHourPerIp,
     timeWindow: '1 hour',
@@ -125,7 +131,8 @@ export const registerApiRoutes: FastifyPluginCallback<AppDependencies> = (app, d
     return sendOutcome(reply, await service.cashOut(ctx, body), gameStateSchema);
   });
 
-  app.post('/fairness/rotate', async (request, reply) => {
+  const rotateLimit = { rateLimit: { max: ROTATIONS_PER_MINUTE, timeWindow: '1 minute' } };
+  app.post('/fairness/rotate', { config: rotateLimit }, async (request, reply) => {
     const ctx = await actionContext(request);
     const body = parse(rotateCommitmentRequestSchema, request.body, 'request body');
     return sendOutcome(
@@ -155,7 +162,7 @@ export const registerApiRoutes: FastifyPluginCallback<AppDependencies> = (app, d
   app.get('/health', { config: { rateLimit: false } }, async (request, reply) => {
     let database: 'ok' | 'unreachable' = 'ok';
     try {
-      await deps.pingDatabase();
+      await pingDatabase();
     } catch (error) {
       database = 'unreachable';
       request.log.warn({ err: error }, 'health check: database unreachable');
