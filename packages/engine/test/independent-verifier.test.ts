@@ -78,6 +78,37 @@ describe('independent verifier (tools/verify-round.mjs)', () => {
     );
   });
 
+  it.each([
+    [
+      'an unfinished round',
+      { outcome: { status: 'ACTIVE', pumpCount: 1, settlementReason: null, payoutCents: '0' } },
+    ],
+    ['a bet below the minimum', { betCents: '1' }],
+    ['an auto cash-out of 1.00x', { autoCashoutHundredths: '100' }],
+    ['an uppercase server seed', { serverSeed: 'AB'.repeat(32) }],
+    ['a client seed with a space', { clientSeed: 'a b' }],
+    ['a zero nonce', { nonce: 0 }],
+    [
+      'more than 25 pumps',
+      { outcome: { status: 'POPPED', pumpCount: 26, settlementReason: null, payoutCents: '0' } },
+    ],
+  ])('refuses %s as input rather than verifying it', (_label, patch) => {
+    const valid = {
+      rulesVersion: 'pump-v1',
+      commitment: commitmentFor(new Uint8Array(32)),
+      serverSeed: '00'.repeat(32),
+      roundId: '00000000-0000-4000-8000-000000000001',
+      nonce: 1,
+      clientSeed: 'seed',
+      betCents: '1000',
+      autoCashoutHundredths: null,
+      outcome: { status: 'POPPED', pumpCount: 0, settlementReason: null, payoutCents: '0' },
+    };
+    const result = verifyRevealedRound({ ...valid, ...patch });
+    expect(result.verified).toBe(false);
+    expect(result.problems.length).toBeGreaterThan(0);
+  });
+
   it('rejects a tampered payout', () => {
     const fairness: FairnessInputs = {
       serverSeed: new Uint8Array(32).fill(7),

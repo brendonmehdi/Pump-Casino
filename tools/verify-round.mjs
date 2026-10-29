@@ -66,6 +66,45 @@ function replay(popPoint, v, betCents) {
   return { status: 'ACTIVE', pumpCount: pumps, reason: null, payout: 0n };
 }
 
+const HEX_32_BYTES = /^[0-9a-f]{64}$/;
+const ROUND_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const CLIENT_SEED = /^[\x21-\x7B\x7D\x7E]{1,64}$/; // printable ASCII without space or "|"
+const INTEGER = /^(0|[1-9][0-9]*)$/;
+
+/** The encoding and range rules of the specification; anything else cannot be a real round. */
+function inputProblems(v) {
+  const problems = [];
+  const inRange = (text, min, max) =>
+    typeof text === 'string' && INTEGER.test(text) && BigInt(text) >= min && BigInt(text) <= max;
+  if (v.rulesVersion !== 'pump-v1')
+    problems.push(`unsupported rules version ${String(v.rulesVersion)}`);
+  if (!HEX_32_BYTES.test(v.serverSeed))
+    problems.push('server seed must be 64 lowercase hex characters');
+  if (!HEX_32_BYTES.test(v.commitment))
+    problems.push('commitment must be 64 lowercase hex characters');
+  if (!ROUND_ID.test(v.roundId)) problems.push('round id must be a lowercase UUID');
+  if (!Number.isSafeInteger(v.nonce) || v.nonce < 1)
+    problems.push('nonce must be a positive integer');
+  if (!CLIENT_SEED.test(v.clientSeed)) problems.push('client seed is not in the allowed alphabet');
+  if (!inRange(v.betCents, 10n, 100_000n)) problems.push('bet must be 10 to 100000 cents');
+  if (v.autoCashoutHundredths !== null && !inRange(v.autoCashoutHundredths, 101n, 100_000n)) {
+    problems.push('auto cash-out must be null or 101 to 100000 hundredths');
+  }
+  const outcome = v.outcome ?? {};
+  if (!['POPPED', 'CASHED_OUT', 'EXPIRED'].includes(outcome.status)) {
+    problems.push('only finished rounds (POPPED, CASHED_OUT, EXPIRED) can be verified');
+  }
+  if (
+    !Number.isInteger(outcome.pumpCount) ||
+    outcome.pumpCount < 0 ||
+    outcome.pumpCount > MAX_PUMPS
+  ) {
+    problems.push('pump count must be 0 to 25');
+  }
+  if (!inRange(outcome.payoutCents, 0n, 10n ** 15n)) problems.push('payout must be integer cents');
+  return problems;
+}
+
 function settled(pumps, reason, betCents) {
   return { status: 'CASHED_OUT', pumpCount: pumps, reason, payout: payout(betCents, pumps) };
 }
@@ -77,7 +116,18 @@ function settled(pumps, reason, betCents) {
  *   payoutCents: string } }} v
  */
 export function verifyRevealedRound(v) {
-  if (v.rulesVersion !== 'pump-v1') throw new Error(`Unsupported rules version ${v.rulesVersion}`);
+  const problems = inputProblems(v);
+  if (problems.length > 0) {
+    return {
+      verified: false,
+      commitmentMatches: false,
+      outcomeMatches: false,
+      popPoint: null,
+      draws: [],
+      replayed: null,
+      problems,
+    };
+  }
   const seed = Buffer.from(v.serverSeed, 'hex');
   const commitmentMatches = createHash('sha256').update(seed).digest('hex') === v.commitment;
   const draws = [];
@@ -101,6 +151,7 @@ export function verifyRevealedRound(v) {
     popPoint,
     draws,
     replayed: { ...replayed, payout: replayed.payout.toString() },
+    problems: [],
   };
 }
 
