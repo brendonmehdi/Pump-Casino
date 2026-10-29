@@ -112,7 +112,7 @@ Each item names where it is satisfied once done. "PDF" = original assignment, "M
 
 ### Phase 2 — Contracts
 
-- [ ] **T2.1 `packages/contracts`**: Zod schemas for every request/response, error codes, strict money/bet/client-seed/target parsing (rejects NaN, ∞, negatives, >2 dp, whitespace, oversize, overflow).
+- [x] **T2.1 `packages/contracts`**: Zod schemas for every request/response, error codes, strict money/bet/client-seed/target parsing (rejects NaN, ∞, negatives, >2 dp, whitespace, oversize, overflow).
   - Accept: unit tests for every malformed-input class.
 
 ### Phase 3 — Persistence

@@ -1,0 +1,22 @@
+{
+  "name": "@pump/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Typed, runtime-validated API contracts shared by the Pump API and web app.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@pump/engine": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
