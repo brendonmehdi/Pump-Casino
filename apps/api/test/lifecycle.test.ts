@@ -205,6 +205,38 @@ describe('client address behind a proxy', () => {
       await proxied.close();
     }
   });
+
+  // The chain observed on Render: Render's proxy connects from 127.0.0.1, and the hop before it
+  // is a Cloudflare edge address that changes from request to request.
+  it('counts a visitor behind Render and Cloudflare as one client, whatever the edge', async () => {
+    const chains = [
+      '198.51.100.7, 172.70.1.2', // visitor A via one Cloudflare edge
+      '203.0.113.9, 198.51.100.7, 162.158.3.4', // A again, forging an entry, via another edge
+      '198.51.100.7, 104.16.0.9', // A a third time: over the limit of 2
+      '198.51.100.8, 172.70.1.2', // visitor B, through the same edge as A's first request
+    ];
+    const send = async (trustProxy: string) => {
+      const proxied = await createHarness({ TRUST_PROXY: trustProxy, RATE_LIMIT_PER_MINUTE: '2' });
+      try {
+        const statuses = [];
+        for (const chain of chains) {
+          const response = await proxied.app.inject({
+            method: 'GET',
+            url: '/api/wallet',
+            remoteAddress: '127.0.0.1',
+            headers: { 'x-forwarded-for': chain },
+          });
+          statuses.push(response.statusCode);
+        }
+        return statuses;
+      } finally {
+        await proxied.close();
+      }
+    };
+    expect(await send('loopback,uniquelocal,cloudflare')).toEqual([401, 401, 429, 401]);
+    // Without Cloudflare's ranges every edge address looks like a different visitor.
+    expect(await send('loopback,uniquelocal')).toEqual([401, 401, 401, 401]);
+  });
 });
 
 describe('operations', () => {

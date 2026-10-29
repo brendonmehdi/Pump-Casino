@@ -3,11 +3,43 @@ import { z } from 'zod';
 const flag = z.enum(['true', 'false']).transform((value) => value === 'true');
 
 /**
+ * Cloudflare's published edge ranges (https://www.cloudflare.com/ips/, checked 2026-10-29).
+ * Render puts Cloudflare in front of every service, so the hop before Render's own proxies is a
+ * Cloudflare address; trusting these lets the server read the visitor address Cloudflare
+ * appended. A range Cloudflare adds later only makes requests through it count against the
+ * Cloudflare address instead: stricter, never spoofable.
+ */
+export const CLOUDFLARE_RANGES = [
+  '173.245.48.0/20',
+  '103.21.244.0/22',
+  '103.22.200.0/22',
+  '103.31.4.0/22',
+  '141.101.64.0/18',
+  '108.162.192.0/18',
+  '190.93.240.0/20',
+  '188.114.96.0/20',
+  '197.234.240.0/22',
+  '198.41.128.0/17',
+  '162.158.0.0/15',
+  '104.16.0.0/13',
+  '104.24.0.0/14',
+  '172.64.0.0/13',
+  '131.0.72.0/22',
+  '2400:cb00::/32',
+  '2606:4700::/32',
+  '2803:f800::/32',
+  '2405:b500::/32',
+  '2405:8100::/32',
+  '2a06:98c0::/29',
+  '2c0f:f248::/32',
+];
+
+/**
  * Which proxies to believe about the client address, as a comma-separated list of proxy IPs,
- * CIDRs or proxy-addr keywords (`loopback`, `linklocal`, `uniquelocal`), or `false`.
- * X-Forwarded-For is then read from the right, so entries a client adds itself are ignored.
- * `true` (trust everyone) would let a client choose its own rate-limit key, and Fastify 5
- * deliberately trusts nothing for a bare hop count, so both are refused.
+ * CIDRs, proxy-addr keywords (`loopback`, `linklocal`, `uniquelocal`) and `cloudflare`, or
+ * `false`. X-Forwarded-For is then read from the right, so entries a client adds itself are
+ * ignored. `true` (trust everyone) would let a client choose its own rate-limit key, and
+ * Fastify 5 deliberately trusts nothing for a bare hop count, so both are refused.
  */
 const trustProxy = z
   .string()
@@ -21,7 +53,8 @@ const trustProxy = z
       : value
           .split(',')
           .map((entry) => entry.trim())
-          .filter((entry) => entry.length > 0),
+          .filter((entry) => entry.length > 0)
+          .flatMap((entry) => (entry === 'cloudflare' ? CLOUDFLARE_RANGES : [entry])),
   );
 
 const envSchema = z.object({
@@ -34,7 +67,7 @@ const envSchema = z.object({
   DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(50).default(10),
   /** Defaults to true in production. Browsers only send Secure cookies over HTTPS. */
   COOKIE_SECURE: flag.optional(),
-  /** On Render: its proxies' private addresses (see docs/DEPLOYMENT.md). */
+  /** On Render: `loopback,uniquelocal,cloudflare` (see docs/DEPLOYMENT.md). */
   TRUST_PROXY: trustProxy,
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(600),

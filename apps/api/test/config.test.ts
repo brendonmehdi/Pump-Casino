@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadConfig } from '../src/config';
+import { CLOUDFLARE_RANGES, loadConfig } from '../src/config';
 
 const base = { DATABASE_URL: 'postgres://user:pass@localhost:5432/db' };
 
@@ -14,6 +14,16 @@ describe('loadConfig', () => {
       'uniquelocal',
       '100.64.0.0/10',
     ]);
+  });
+
+  it("expands `cloudflare` into Cloudflare's published ranges", () => {
+    const trusted = loadConfig({
+      ...base,
+      TRUST_PROXY: 'loopback,uniquelocal, cloudflare',
+    }).trustProxy;
+    expect(trusted).toEqual(['loopback', 'uniquelocal', ...CLOUDFLARE_RANGES]);
+    expect(trusted).toContain('172.64.0.0/13');
+    expect(trusted).toContain('2606:4700::/32');
   });
 
   it.each(['true', '1'])(
