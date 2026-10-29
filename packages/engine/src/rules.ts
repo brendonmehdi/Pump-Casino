@@ -21,6 +21,8 @@ export interface PumpRules {
   readonly maxMultiplier: bigint;
   readonly minBetCents: bigint;
   readonly maxBetCents: bigint;
+  /** Play-money balance granted once to every new player. */
+  readonly startingBalanceCents: bigint;
   /** Allowed auto cash-out targets, in hundredths of a multiplier (101n = 1.01×). */
   readonly minAutoCashoutHundredths: bigint;
   readonly maxAutoCashoutHundredths: bigint;
@@ -63,6 +65,7 @@ export const PUMP_RULES_V1: PumpRules = {
   maxMultiplier: 1000n,
   minBetCents: 10n, // $0.10
   maxBetCents: 100_000n, // $1,000.00
+  startingBalanceCents: 1_000_000n, // $10,000.00
   minAutoCashoutHundredths: 101n, // 1.01×
   maxAutoCashoutHundredths: 100_000n, // 1,000.00×
   roundTtlMs: HOURS_24_MS,
@@ -123,7 +126,11 @@ function assertRules(rules: PumpRules): void {
       throw new RangeError('Pop chance must strictly increase with every pump');
     }
   });
-  if (rules.minBetCents < 1n || rules.maxBetCents < rules.minBetCents) {
+  if (
+    rules.minBetCents < 1n ||
+    rules.maxBetCents < rules.minBetCents ||
+    rules.startingBalanceCents < rules.maxBetCents
+  ) {
     throw new RangeError('Bet limits are inconsistent');
   }
   if (
