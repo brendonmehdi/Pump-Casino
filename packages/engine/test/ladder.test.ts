@@ -73,12 +73,15 @@ describe('exact RTP proof', () => {
   it('floors every payout: expected return never exceeds 97% for ANY permitted bet at ANY step', () => {
     // Exhaustive: every cent amount from $0.10 to $1,000.00 at all 25 steps (2.5M cases).
     const violations: string[] = [];
-    let worst = { bet: 0n, pump: 0, rtpPpm: 1_000_000n };
+    // Worst effective RTP (parts per million, floored) over all bets, and over bets ≥ $1 / ≥ $10.
+    const tiers = [10n, 100n, 1_000n];
+    const worst = tiers.map(() => ({ bet: 0n, pump: 0, rtpPpm: 1_000_000n }));
     for (const step of PUMP_V1.ladder) {
       const { survival, multiplier } = step;
       for (let bet = PUMP_RULES_V1.minBetCents; bet <= PUMP_RULES_V1.maxBetCents; bet += 1n) {
         const payout = payoutCents(PUMP_V1, bet, step.pump);
         const exact = bet * multiplier.numerator; // bet·M(n), scaled by M's denominator
+        // The most whole cents that don't exceed bet·M(n): one more cent would pay over 97%.
         const isFloor =
           payout * multiplier.denominator <= exact &&
           (payout + 1n) * multiplier.denominator > exact;
@@ -86,12 +89,42 @@ describe('exact RTP proof', () => {
         const withinRtp = survival.numerator * payout * 100n <= 97n * bet * survival.denominator;
         if (!isFloor || !withinRtp) violations.push(`${bet.toString()}¢ @ pump ${step.pump}`);
         const rtpPpm = (survival.numerator * payout * 1_000_000n) / (survival.denominator * bet);
-        if (rtpPpm < worst.rtpPpm) worst = { bet, pump: step.pump, rtpPpm };
+        tiers.forEach((minimum, index) => {
+          const current = worst[index];
+          if (current && bet >= minimum && rtpPpm < current.rtpPpm) {
+            worst[index] = { bet, pump: step.pump, rtpPpm };
+          }
+        });
       }
     }
     expect(violations).toEqual([]);
-    // The single worst case is the minimum bet cashed out on pump 3: 12¢ back × 74.72% ≈ 89.67%.
-    expect(worst).toEqual({ bet: 10n, pump: 3, rtpPpm: 896682n });
+    // Pinned to the independent Python reference (tools/rtp_analysis.py) and docs/MATH.md:
+    expect(worst).toEqual([
+      // Overall: the minimum bet on pump 3, 12¢ back where 12.98¢ was due, 89.67%.
+      { bet: 10n, pump: 3, rtpPpm: 896_682n },
+      // Bets of $1 or more: $1.10 on pump 1 pays $1.15 of $1.1597…, 96.18%.
+      { bet: 110n, pump: 1, rtpPpm: 961_818n },
+      // Bets of $10 or more: $10.30 on pump 1, 96.91%.
+      { bet: 1_030n, pump: 1, rtpPpm: 969_126n },
+    ]);
+  });
+
+  it.each([
+    [10n, 3, 896_682n],
+    [11n, 2, 910_800n],
+    [25n, 4, 949_586n],
+    [50n, 3, 956_461n],
+    [100n, 3, 963_933n],
+    [1_000n, 2, 969_318n],
+    [10_000n, 1, 969_956n],
+    [100_000n, 1, 969_992n],
+  ])('the worst point for a %s¢ bet matches the reference (pump %i, %i ppm)', (bet, pump, ppm) => {
+    const rtps = PUMP_V1.ladder.map((step) => {
+      const payout = payoutCents(PUMP_V1, bet, step.pump);
+      return (step.survival.numerator * payout * 1_000_000n) / (step.survival.denominator * bet);
+    });
+    const lowest = rtps.reduce((min, value) => (value < min ? value : min));
+    expect([rtps.indexOf(lowest) + 1, lowest]).toEqual([pump, ppm]);
   });
 
   it('documents the cent-rounding loss for the $0.10 minimum bet', () => {

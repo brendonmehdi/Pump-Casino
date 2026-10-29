@@ -137,6 +137,35 @@ describe('pump', () => {
     expect(apply(at2, PUMP).round.status).toBe('POPPED');
   });
 
+  // Expected pumps come from the independent Python reference (tools/rtp_analysis.py): the first
+  // pump whose exact multiplier is at or above the target, or the ladder top if none is.
+  it.each([
+    [101n, 1, 'AUTO_TARGET'],
+    [105n, 1, 'AUTO_TARGET'], // 1.0543… ≥ 1.05
+    [106n, 2, 'AUTO_TARGET'],
+    [116n, 2, 'AUTO_TARGET'], // 1.1618… ≥ 1.16
+    [117n, 3, 'AUTO_TARGET'],
+    [150n, 5, 'AUTO_TARGET'], // pump 4 is 1.4709…
+    [200n, 7, 'AUTO_TARGET'],
+    [1_000n, 14, 'AUTO_TARGET'], // pump 13 is 8.83…, pump 14 is 11.66…
+    [79_401n, 25, 'LADDER_TOP'], // reached on the last pump: the top takes precedence
+    [79_402n, 25, 'LADDER_TOP'], // never reached: the top still settles the round
+    [100_000n, 25, 'LADDER_TOP'],
+  ])('with an auto target of %s hundredths, settles on pump %i as %s', (target, pump, reason) => {
+    let round: Round = activeRound({ autoCashoutHundredths: target, betCents: 333n });
+    let last: Transition | null = null;
+    while (round.status === 'ACTIVE') {
+      last = apply(round, PUMP);
+      round = last.round;
+    }
+    expect(last?.event).toEqual({
+      type: 'CASHED_OUT',
+      pump,
+      reason,
+      payoutCents: payoutCents(PUMP_V1, 333n, pump),
+    });
+  });
+
   it('settles once, as LADDER_TOP, when the target and the top coincide on pump 25', () => {
     const at24 = pumpTimes(activeRound({ autoCashoutHundredths: 79_401n }), 24);
     const { round, event } = apply(at24, PUMP);
