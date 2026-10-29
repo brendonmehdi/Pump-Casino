@@ -190,7 +190,10 @@ describe('request hardening', () => {
 
   it('sends security headers', async () => {
     const response = await harness.app.inject({ method: 'GET', url: '/api/health' });
-    expect(response.headers['content-security-policy']).toContain("default-src 'self'");
+    const csp = String(response.headers['content-security-policy']);
+    expect(csp).toContain("default-src 'self'");
+    // Without HTTPS (cookieSecure=false) the upgrade directive would break WebKit on localhost.
+    expect(csp).not.toContain('upgrade-insecure-requests');
     expect(response.headers['x-content-type-options']).toBe('nosniff');
     expect(response.headers['x-frame-options']).toBeDefined();
   });

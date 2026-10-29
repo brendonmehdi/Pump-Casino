@@ -57,6 +57,9 @@ export async function buildApp(deps: AppDependencies): Promise<FastifyInstance> 
         baseUri: ["'self'"],
         formAction: ["'self'"],
         frameAncestors: ["'none'"],
+        // Only behind HTTPS: over plain-http localhost, WebKit would rewrite every asset URL to
+        // https and fail to load the app (Chromium exempts localhost, which hid this).
+        upgradeInsecureRequests: config.cookieSecure ? [] : null,
       },
     },
   });
