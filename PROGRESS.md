@@ -34,7 +34,7 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 | Check                                          | Result                                                                               |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------ |
 | Engine / contracts / web unit / API            | 105 / 73 / 5 / 68 tests passing                                                      |
-| E2E (desktop Chromium, Pixel 7, iPhone WebKit) | 39 / 39                                                                              |
+| E2E (desktop Chromium, Pixel 7, iPhone WebKit) | 41 / 41 (incl. axe-core WCAG scans)                                                  |
 | Lint, typecheck, format                        | clean                                                                                |
 | GitHub Actions (incl. E2E on Linux)            | green on every push to main                                                          |
 | Production Docker image                        | migrations, health, SPA, cookie flags, restart persistence checked by hand           |
@@ -70,3 +70,4 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 - 01:50 Docker/Railway config verified locally; docs written
 - 02:15 independent review: 11 findings, all fixed and tested; landscape layout fix
 - 02:23 final audit; secrets audit of full history clean
+- 02:35 axe-core accessibility scan: 2 WCAG issues found and fixed

@@ -184,9 +184,9 @@ refund, and the seed is revealed in your history like any other round. Why this 
 
 This project was built in one continuous Claude Code session (Claude Opus 5.5), directed by the
 repository owner's written brief. Wall-clock time from the first document read (00:06 EDT,
-2026-10-29) to the final audit (02:23 EDT) was **about 2 hours 20 minutes**. That covers
-planning, the engine and proofs, database, API, web client, tests, an independent review with
-fixes, Docker/CI, and the docs. Deployment is still pending the Railway login. The owner's own
+2026-10-29) to the final verified commit (about 02:40 EDT) was **about 2 hours 35 minutes**. That
+covers planning, the engine and proofs, database, API, web client, tests, an independent review
+with fixes, an accessibility scan with fixes, Docker/CI, and the docs. Deployment is still pending the Railway login. The owner's own
 time writing the brief and reviewing the result isn't included; see [`AI_USAGE.md`](AI_USAGE.md)
 for who did what.
 
