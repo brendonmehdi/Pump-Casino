@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+pnpm-lock.yaml
+playwright-report
+test-results
+apps/api/drizzle/meta
+Pump_Casino_Claude_Code_Master_Brief_Complete.md
+Pump_Casino_Continuation_Sections_17_to_24.md

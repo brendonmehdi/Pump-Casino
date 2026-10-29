@@ -1,0 +1,23 @@
+{
+  "name": "@pump/engine",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pure, deterministic game engine for Pump: rules, exact math, fairness, state machine.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@noble/hashes": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "fast-check": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
