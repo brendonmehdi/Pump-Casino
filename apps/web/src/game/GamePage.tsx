@@ -11,6 +11,7 @@ import { PressureLadder } from './PressureLadder';
 import { RecentRounds } from './RecentRounds';
 import { useSettings } from './settingsContext';
 import { Stage } from './Stage';
+import { useFreshClientSeed } from './useFreshClientSeed';
 import { useGameHotkeys } from './useGameHotkeys';
 
 type Mode = 'manual' | 'auto';
@@ -28,6 +29,7 @@ export function GamePage() {
   // An open round always gets Pump and Cash out, whatever the mode, unless auto-bet is
   // driving it. Otherwise stopping auto-bet mid-round would leave no way to finish it.
   const manualControls = mode === 'manual' || (roundActive && !autoRunning);
+  useFreshClientSeed();
 
   useGameHotkeys({
     enabled: manualControls && !autoRunning && game.phase === 'ready',

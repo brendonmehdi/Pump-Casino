@@ -92,7 +92,7 @@ export function FairnessPanel({ disabled }: { readonly disabled: boolean }) {
             className={`text-xs ${settings.clientSeedError ? 'text-danger' : 'text-ink-faint'}`}
           >
             {settings.clientSeedError ??
-              'Mixed with the server seed, so the server cannot pick your outcome.'}
+              'A new random seed is picked after every bet, once the next hash is fixed, so the server can never know it in advance. You can type your own for your next bet.'}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">

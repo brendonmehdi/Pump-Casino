@@ -14,7 +14,8 @@ export type ActionResult =
 
 export interface Notice {
   readonly message: string;
-  readonly code: ErrorCode | 'NETWORK';
+  /** COMMITMENT_CHANGED: a round started on a different seed hash than the one shown. */
+  readonly code: ErrorCode | 'NETWORK' | 'COMMITMENT_CHANGED';
 }
 
 export interface StartInput {

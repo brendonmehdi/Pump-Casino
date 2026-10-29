@@ -174,8 +174,10 @@ refund, and the seed is revealed in your history like any other round. Why this 
 - A double-clicked Cash Out pays once (version, status, and a unique ledger index as backstop).
 - A retried request with the same `Idempotency-Key` replays the original result instead of
   acting twice.
-- The pop point is fixed at bet time from a seed committed (SHA-256) _before_ you choose your
-  client seed. It never reaches the browser early; an end-to-end test checks every response.
+- The pop point is fixed at bet time from a seed committed (SHA-256) _before_ that round's client
+  seed exists. The app picks a fresh random client seed after every bet, once the next hash is
+  fixed, so the server can't know it in advance.
+- The pop point never reaches the browser early; an end-to-end test checks every response.
 
 ## Tradeoffs
 

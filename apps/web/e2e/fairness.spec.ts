@@ -52,4 +52,34 @@ test('a finished round verifies in the browser from its revealed seed', async ({
   await expect(report).toContainText('Matches SHA-256 of the revealed seed');
   await expect(report).toContainText('The balloon was always going to pop on pump 3.');
   await expect(report.getByRole('row')).toHaveCount(4); // header + 3 draws
+  // The hash is checked against this browser's own record, not just the server's report.
+  await expect(page.getByTestId('verify-shown-hash')).toHaveText(
+    'Same hash this browser recorded when you placed the bet',
+  );
+});
+
+test('every bet sends a fresh client seed, picked only after the next hash is fixed', async ({
+  page,
+}) => {
+  await openGame(page);
+  await page.locator('details', { hasText: 'Provably fair' }).locator('summary').click();
+  const seedField = page.getByTestId('client-seed');
+  const seeds: string[] = [];
+  for (let round = 0; round < 2; round += 1) {
+    const seed = await seedField.inputValue();
+    await placeBet(page, '1');
+    const state = (await (await page.request.get('/api/pump/current')).json()) as {
+      round: { id: string; version: number; fairness: { clientSeed: string } };
+    };
+    expect(state.round.fairness.clientSeed).toBe(seed);
+    // Replaced as soon as it has been used, so the server can't know the next one in advance.
+    await expect(seedField).not.toHaveValue(seed);
+    seeds.push(seed);
+    await pump(page);
+    if (await page.getByTestId('cashout-button').isEnabled()) {
+      await page.getByTestId('cashout-button').click();
+    }
+    await expect(page.getByTestId('bet-button')).toBeEnabled();
+  }
+  expect(new Set(seeds).size).toBe(2);
 });

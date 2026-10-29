@@ -14,6 +14,7 @@ import type { ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
 import { ApiError, api } from '../api/client';
 import { useGame } from '../game/gameContext';
+import { shownCommitmentFor } from '../game/shownCommitments';
 import { chance, money, times } from '../lib/format';
 
 const REPO_FAIRNESS_DOC = 'https://github.com/brendonmehdi/Pump-Casino/blob/main/docs/FAIRNESS.md';
@@ -161,6 +162,9 @@ function Report({
   readonly round: PublicRound | null;
 }) {
   const report: VerificationReport = verifyRound(PUMP_V1, toRevealed(data));
+  // The hash this browser recorded when the bet was placed, if it was placed here.
+  const shown = shownCommitmentFor(data.roundId);
+  const hashChanged = shown !== null && shown !== data.commitment;
   const pastedHashAsSeed = data.serverSeed === data.commitment;
   const { pumpCount } = data.outcome;
   const reached =
@@ -171,13 +175,15 @@ function Report({
       className="flex flex-col gap-5"
       data-testid="verify-report"
     >
-      <Callout tone={report.verdict === 'VERIFIED' ? 'good' : 'bad'}>
+      <Callout tone={report.verdict === 'VERIFIED' && !hashChanged ? 'good' : 'bad'}>
         <span className="font-semibold" data-testid="verify-verdict">
-          {report.verdict === 'VERIFIED'
-            ? 'Verified: this round was played exactly as committed.'
-            : report.verdict === 'MISMATCH'
-              ? 'Does not match: the revealed values do not reproduce the recorded result.'
-              : "Can't verify these values."}
+          {hashChanged
+            ? 'Does not match: this is not the seed hash you were shown before the bet.'
+            : report.verdict === 'VERIFIED'
+              ? 'Verified: this round was played exactly as committed.'
+              : report.verdict === 'MISMATCH'
+                ? 'Does not match: the revealed values do not reproduce the recorded result.'
+                : "Can't verify these values."}
         </span>
         {pastedHashAsSeed && (
           <span className="block">
@@ -204,6 +210,16 @@ function Report({
               ? 'Matches SHA-256 of the revealed seed'
               : 'Does not match the revealed seed'}
           </span>
+          {shown !== null && (
+            <span
+              className={`block text-xs ${hashChanged ? 'text-danger' : 'text-win'}`}
+              data-testid="verify-shown-hash"
+            >
+              {hashChanged
+                ? `This browser recorded a different hash when you bet: ${shown}`
+                : 'Same hash this browser recorded when you placed the bet'}
+            </span>
+          )}
         </Row>
         <Row label="Revealed server seed">
           <span className="break-all">{data.serverSeed}</span>

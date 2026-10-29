@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { ApiError, api, type RetryObserver } from '../api/client';
+import { rememberShownCommitment } from './shownCommitments';
 import {
   GAME_KEY,
   GameContext,
@@ -124,20 +125,35 @@ export function GameProvider({ children }: { readonly children: ReactNode }) {
   );
 
   const start = useCallback(
-    (input: StartInput): Promise<ActionResult> => {
+    async (input: StartInput): Promise<ActionResult> => {
       const state = queryClient.getQueryData<GameState>(GAME_KEY);
-      if (!state) return Promise.resolve({ ok: false, reason: 'unavailable' });
-      return run('start', (observer) =>
+      if (!state) return { ok: false, reason: 'unavailable' };
+      const shown = state.nextCommitment;
+      const result = await run('start', (observer) =>
         api.start(
           {
             betCents: input.betCents.toString(),
             clientSeed: input.clientSeed,
-            commitmentId: state.nextCommitment.id,
+            commitmentId: shown.id,
             autoCashoutMultiplier: input.autoCashout,
           },
           observer,
         ),
       );
+      // Keep our own record of the hash the player saw, and check the round actually uses it,
+      // rather than trusting the server's later report of what it committed to.
+      const round = result.ok ? result.state.round : null;
+      if (round) {
+        rememberShownCommitment(shown.id, shown.commitment);
+        if (round.id !== shown.id || round.fairness.commitment !== shown.commitment) {
+          setNotice({
+            message:
+              "This round started on a different seed hash than the one you were shown, so don't trust its result.",
+            code: 'COMMITMENT_CHANGED',
+          });
+        }
+      }
+      return result;
     },
     [queryClient, run],
   );
