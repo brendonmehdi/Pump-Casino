@@ -70,4 +70,4 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 - 01:50 Docker/Railway config verified locally; docs written
 - 02:15 independent review: 11 findings, all fixed and tested; landscape layout fix
 - 02:23 final audit; secrets audit of full history clean
-- 02:35 axe-core accessibility scan: 2 WCAG issues found and fixed
+- 02:28 axe-core accessibility scan: 2 WCAG issues found and fixed
