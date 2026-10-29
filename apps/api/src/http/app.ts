@@ -162,10 +162,6 @@ function describeError(error: FastifyError | DomainError): { code: ErrorCode; me
   };
 }
 
-export function errorPayload(
-  code: ErrorCode,
-  message: string,
-  request: FastifyRequest,
-): ErrorResponse {
+function errorPayload(code: ErrorCode, message: string, request: FastifyRequest): ErrorResponse {
   return { error: { code, message, requestId: request.id } };
 }

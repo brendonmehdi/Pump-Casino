@@ -249,5 +249,4 @@ export type HistoryResponse = z.infer<typeof historyResponseSchema>;
 export type VerificationData = z.infer<typeof verificationDataSchema>;
 export type VerifyResponse = z.infer<typeof verifyResponseSchema>;
 export type RotateCommitmentResponse = z.infer<typeof rotateCommitmentResponseSchema>;
-export type HealthResponse = z.infer<typeof healthResponseSchema>;
 export type ErrorResponse = z.infer<typeof errorResponseSchema>;

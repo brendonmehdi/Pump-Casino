@@ -209,10 +209,6 @@ function assertActiveInvariants(ruleSet: RuleSet, round: ActiveRound): void {
   }
 }
 
-export function isTerminal(round: Round): round is TerminalRound {
-  return round.status !== 'ACTIVE';
-}
-
 export function viewRound(ruleSet: RuleSet, round: Round): RoundView {
   const { maxPumps } = ruleSet.rules;
   const reached = round.pumpCount > 0 ? ladderStep(ruleSet, round.pumpCount) : null;

@@ -16,7 +16,7 @@ export interface SessionPlayer {
 }
 
 /** Only this hash is stored; a database leak does not reveal usable session tokens. */
-export function hashSessionToken(token: string): Buffer {
+function hashSessionToken(token: string): Buffer {
   return createHash('sha256').update(token, 'utf8').digest();
 }
 

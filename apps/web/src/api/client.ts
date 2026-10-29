@@ -39,7 +39,7 @@ export class ApiError extends Error {
 }
 
 /** The request never reached the server, or its response never came back. */
-export class NetworkError extends Error {
+class NetworkError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
     this.name = 'NetworkError';
