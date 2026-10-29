@@ -16,10 +16,12 @@ import { ApiError, api } from '../api/client';
 import { useGame } from '../game/gameContext';
 import { shownCommitmentFor } from '../game/shownCommitments';
 import { chance, money, times } from '../lib/format';
+import { useDocumentTitle } from '../lib/useDocumentTitle';
 
 const REPO_FAIRNESS_DOC = 'https://github.com/brendonmehdi/Pump-Casino/blob/main/docs/FAIRNESS.md';
 
 export function VerifyPage() {
+  useDocumentTitle('Verify a round · Pump');
   const { roundId } = useParams();
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 pb-16">

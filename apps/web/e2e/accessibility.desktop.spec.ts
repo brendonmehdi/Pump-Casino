@@ -42,4 +42,8 @@ test('the verify and history pages have no serious accessibility violations', as
   await page.goto('/history');
   await expect(page.getByTestId('history-list')).toBeVisible();
   await expectNoSeriousViolations(page);
+  // The game screen again, now with a popped round's pill in the recent rounds.
+  await page.goto('/');
+  await expect(page.getByTestId('recent-rounds')).toContainText('Pop 1');
+  await expectNoSeriousViolations(page);
 });

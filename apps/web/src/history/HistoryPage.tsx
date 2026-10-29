@@ -3,11 +3,13 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { api } from '../api/client';
 import { money, times } from '../lib/format';
+import { useDocumentTitle } from '../lib/useDocumentTitle';
 
 const PAGE_SIZE = 20;
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
 
 export function HistoryPage() {
+  useDocumentTitle('History · Pump');
   const query = useInfiniteQuery({
     queryKey: ['history', 'page'],
     queryFn: ({ pageParam }) => api.history(PAGE_SIZE, pageParam),
@@ -75,7 +77,7 @@ function HistoryRow({ round }: { readonly round: PublicRound }) {
       <span className="tabular">Bet {money(round.betCents)}</span>
       <span className={`tabular ${won ? 'text-win' : 'text-loss'}`}>
         {won
-          ? `${times(round.multiplier ?? '')}, +${money(round.payoutCents ?? '0')}`
+          ? `${times(round.multiplier ?? '')}, paid ${money(round.payoutCents ?? '0')}`
           : round.status === 'POPPED'
             ? `Popped on ${(round.pumpCount + 1).toString()}`
             : 'Expired'}

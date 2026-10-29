@@ -72,7 +72,7 @@ test('a finished round verifies in the browser and is listed in history', async 
   await page.getByTestId('recent-rounds').getByRole('link').first().click();
   await expect(page.getByTestId('verify-verdict')).toContainText('Verified');
   await page.goto('/history');
-  await expect(page.getByTestId('history-list')).toContainText('×, +$');
+  await expect(page.getByTestId('history-list')).toContainText('×, paid $');
 });
 
 test('the game fits the screen with the actions in reach', async ({ page, isMobile }) => {

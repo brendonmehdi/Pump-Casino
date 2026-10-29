@@ -113,6 +113,8 @@ export function PressureLadder() {
       </ol>
       <p className="px-1 text-xs text-ink-faint">
         Surviving pump 25 cashes out automatically. Pop chances in red are 30% or higher.
+        Multipliers are shown rounded down to 2 decimals; payouts use the exact value, rounded down
+        to the cent.
       </p>
     </section>
   );

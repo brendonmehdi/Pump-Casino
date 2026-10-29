@@ -13,7 +13,7 @@
   --color-night-4: #1a454c;
   --color-ink: #e8f3ef;
   --color-ink-muted: #9bbab4;
-  --color-ink-faint: #6a8a85;
+  --color-ink-faint: #7b9b96; /* ≥ 4.5:1 on the card backgrounds */
   --color-gauge: #ede3c8;
   --color-latex: #ff8ba7;
   --color-latex-hot: #ff3b47;

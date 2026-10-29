@@ -22,7 +22,8 @@ export function RecentRounds() {
             <li key={round.id} className="shrink-0">
               <Link
                 to={`/verify/${round.id}`}
-                aria-label={`${describe(round)} Verify this round.`}
+                // The accessible name starts with the visible text (WCAG 2.5.3).
+                aria-label={`${label(round)}. ${describe(round)} Verify this round.`}
                 className={`block rounded-full px-2.5 py-1 text-xs font-semibold tabular transition-colors ${
                   round.status === 'CASHED_OUT'
                     ? 'bg-win/12 text-win hover:bg-win/20'

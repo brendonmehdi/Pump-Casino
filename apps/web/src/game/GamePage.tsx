@@ -13,11 +13,13 @@ import { useSettings } from './settingsContext';
 import { Stage } from './Stage';
 import { useFreshClientSeed } from './useFreshClientSeed';
 import { useGameHotkeys } from './useGameHotkeys';
+import { useDocumentTitle } from '../lib/useDocumentTitle';
 
 type Mode = 'manual' | 'auto';
 const isMode = (value: unknown): value is Mode => value === 'manual' || value === 'auto';
 
 export function GamePage() {
+  useDocumentTitle('Pump');
   const game = useGame();
   const settings = useSettings();
   const { unlockAudio } = usePreferences();
