@@ -108,7 +108,7 @@ Each item names where it is satisfied once done. "PDF" = original assignment, "M
 - [x] **T1.4 PumpEngine.ts** state machine: `createRound`, `applyAction` (PUMP / CASH_OUT / EXPIRE), `viewRound`; discriminated unions; `EngineResult` errors.
   - Accept: all transitions + invalid transitions tested; no mutation of inputs.
 - [x] **T1.5 Proof + simulation tests**: exact RTP at 25 points; exhaustive check of every permitted bet (10..100,000 ¢) × 25 steps; fast-check properties; 100k seeded rounds (per-step RTP within statistical bounds, empirical hazard per pump); termination; ≤1,000×; determinism.
-- [ ] **T1.6 docs/MATH.md + docs/FAIRNESS.md** (curve, proof, rounding table incl. $0.10 distortion, protocol, test vectors, guarantees and limitations).
+- [x] **T1.6 docs/MATH.md + docs/FAIRNESS.md** (curve, proof, rounding table incl. $0.10 distortion, protocol, test vectors, guarantees and limitations).
 
 ### Phase 2 — Contracts
 
@@ -128,40 +128,40 @@ Each item names where it is satisfied once done. "PDF" = original assignment, "M
 - [x] **T4.1 Fastify app**: env, cookies, security headers, Origin/Sec-Fetch-Site checks, JSON-only bodies, body limit, rate limits, structured Pino logs with redaction, typed error handler (no stack traces).
 - [x] **T4.2 Routes**: all endpoints in A1–A3; responses validated against contracts.
 - [x] **T4.3 HTTP tests**: status codes, idempotency header semantics, no secret leakage while active (scan every response), cross-session access denied, CSRF/origin rejection.
-- [ ] **T4.4 docs/API.md + docs/DATABASE.md**.
+- [x] **T4.4 docs/API.md + docs/DATABASE.md**.
 
 ### Phase 5 — Minimal vertical slice
 
-- [ ] **T5.1 Web scaffold**: Vite + React + strict TS + Tailwind + TanStack Query; typed API client with idempotency keys and retry of the same key on network failure.
-- [ ] **T5.2 Simple game screen** wired to the real API: bet, pump, cash out, balance, multiplier, payout, next risk, last 10, refresh restore.
-- [ ] **T5.3 Single-origin production serving** (Fastify serves `apps/web/dist`).
-- [ ] **T5.4 Playwright smoke**: new player → start → pump → cash out / pop → refresh restore.
+- [x] **T5.1 Web scaffold**: Vite + React + strict TS + Tailwind + TanStack Query; typed API client with idempotency keys and retry of the same key on network failure.
+- [x] **T5.2 Simple game screen** wired to the real API: bet, pump, cash out, balance, multiplier, payout, next risk, last 10, refresh restore.
+- [x] **T5.3 Single-origin production serving** (Fastify serves `apps/web/dist`).
+- [x] **T5.4 Playwright smoke**: new player → start → pump → cash out / pop → refresh restore.
 
 ### Phase 6 — Above & Beyond
 
-- [ ] **T6.1 Auto Cash Out** UI (server logic from T3.3) + E2E.
-- [ ] **T6.2 Auto-bet** pure controller + hook + UI; bounded (max rounds), never overlaps; all stop conditions; unit + E2E.
-- [ ] **T6.3 Keyboard** Space/Enter/Escape; ignores inputs/dialogs and key repeat; E2E.
-- [ ] **T6.4 Sound** Web Audio synthesis (no copied assets), mute/volume persisted, unlocked on first gesture.
-- [ ] **T6.5 Verify page** `/verify/:roundId` + manual entry; recomputes in-browser with the engine; shows commitment check, per-pump samples, payout.
-- [ ] **T6.6 Pressure Ladder** (signature): 25 rungs, completed/current/next, upcoming multipliers and payouts, remaining steps, tension colouring; no hidden data.
-- [ ] **T6.7 Fairness panel**: next commitment, editable client seed, rotate commitment with invalidation notice.
+- [x] **T6.1 Auto Cash Out** UI (server logic from T3.3) + E2E.
+- [x] **T6.2 Auto-bet** pure controller + hook + UI; bounded (max rounds), never overlaps; all stop conditions; unit + E2E.
+- [x] **T6.3 Keyboard** Space/Enter/Escape; ignores inputs/dialogs and key repeat; E2E.
+- [x] **T6.4 Sound** Web Audio synthesis (no copied assets), mute/volume persisted, unlocked on first gesture.
+- [x] **T6.5 Verify page** `/verify/:roundId` + manual entry; recomputes in-browser with the engine; shows commitment check, per-pump samples, payout.
+- [x] **T6.6 Pressure Ladder** (signature): 25 rungs, completed/current/next, upcoming multipliers and payouts, remaining steps, tension colouring; no hidden data.
+- [x] **T6.7 Fairness panel**: next commitment, editable client seed, rotate commitment with invalidation notice.
 
 ### Phase 7 — Polish
 
-- [ ] **T7.1 UX research** with REA on public Stake pages → `docs/UX_RESEARCH.md` (observed vs assumed).
-- [ ] **T7.2 Higgsfield evaluation** (capabilities, exportability, cost) → `docs/ASSETS.md`; no paid generation without approval.
-- [ ] **T7.3 Visual design**: original SVG balloon, tension (colour/stretch/wobble), pop + win effects, responsive desktop/mobile/landscape, safe areas, reduced motion, a11y labels, focus styles.
+- [x] **T7.1 UX research** with REA on public Stake pages → `docs/UX_RESEARCH.md` (observed vs assumed).
+- [x] **T7.2 Higgsfield evaluation** (capabilities, exportability, cost) → `docs/ASSETS.md`; no paid generation without approval.
+- [x] **T7.3 Visual design**: original SVG balloon, tension (colour/stretch/wobble), pop + win effects, responsive desktop/mobile/landscape, safe areas, reduced motion, a11y labels, focus styles.
 
 ### Phase 8 — QA
 
-- [ ] **T8.1 E2E matrix**: desktop Chromium, mobile Chromium (Pixel), mobile WebKit (iPhone); network-leak test; reconnect/error.
-- [ ] **T8.2 CI** GitHub Actions (lint, typecheck, format, unit, Postgres integration, build, E2E) green on `main`.
-- [ ] **T8.3 Security + code review**: headers, cookies, CSRF, rate limits, log redaction, secrets audit, dead code, duplication, unused deps.
+- [x] **T8.1 E2E matrix**: desktop Chromium, mobile Chromium (Pixel), mobile WebKit (iPhone); network-leak test; reconnect/error.
+- [x] **T8.2 CI** GitHub Actions (lint, typecheck, format, unit, Postgres integration, build, E2E) green on `main`.
+- [~] **T8.3 Security + code review**: headers, cookies, CSRF, rate limits, log redaction, secrets audit, dead code, duplication, unused deps.
 
 ### Phase 9 — Release
 
-- [ ] **T9.1 Deployment config**: Dockerfile, `railway.json`, migrate-on-deploy, health check.
-- [ ] **T9.2 Railway deploy + production smoke** (expected blocker: Railway login).
-- [ ] **T9.3 Docs**: README, AI_USAGE.md, docs/ARCHITECTURE.md, docs/QA.md, honest hours.
+- [x] **T9.1 Deployment config**: Dockerfile, `railway.json`, migrate-on-deploy, health check.
+- [!] **T9.2 Railway deploy + production smoke** (expected blocker: Railway login).
+- [x] **T9.3 Docs**: README, AI_USAGE.md, docs/ARCHITECTURE.md, docs/QA.md, honest hours.
 - [ ] **T9.4 Final audit** against this checklist, push, handoff report.
