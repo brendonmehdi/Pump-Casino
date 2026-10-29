@@ -117,17 +117,17 @@ Each item names where it is satisfied once done. "PDF" = original assignment, "M
 
 ### Phase 3 — Persistence
 
-- [ ] **T3.1 Local Postgres**: `docker-compose.yml` (dev + test DBs), `.env.example`, Zod env validation.
-- [ ] **T3.2 Schema + migrations** (Drizzle): `players`, `seed_commitments`, `rounds`, `wallet_transactions`, `action_requests`; CHECKs, FKs, partial unique indexes (one ACTIVE round/player, one PREPARED commitment/player, one debit + ≤1 credit/round, one grant/player).
+- [x] **T3.1 Local Postgres**: `docker-compose.yml` (dev + test DBs), `.env.example`, Zod env validation.
+- [x] **T3.2 Schema + migrations** (Drizzle): `players`, `seed_commitments`, `rounds`, `wallet_transactions`, `action_requests`; CHECKs, FKs, partial unique indexes (one ACTIVE round/player, one PREPARED commitment/player, one debit + ≤1 credit/round, one grant/player).
   - Accept: migrations apply cleanly from zero; constraint tests prove each guard independently of app code.
-- [ ] **T3.3 Services**: session, fairness (prepare/consume/rotate/reveal), game (start/pump/cashout/current/expire, one shared `settle`), wallet ledger, idempotency, history.
-- [ ] **T3.4 PostgreSQL integration tests**: concurrent bets cannot overspend; one active round; double cash-out pays once; pump vs cash-out race; same-version double pump; idempotent replay of committed-but-lost responses; conflicting payload on reused key; expiry (injected clock) cannot be revived or race; ledger reconciles with balances; restart persistence; fresh vs returning player; session isolation.
+- [x] **T3.3 Services**: session, fairness (prepare/consume/rotate/reveal), game (start/pump/cashout/current/expire, one shared `settle`), wallet ledger, idempotency, history.
+- [x] **T3.4 PostgreSQL integration tests**: concurrent bets cannot overspend; one active round; double cash-out pays once; pump vs cash-out race; same-version double pump; idempotent replay of committed-but-lost responses; conflicting payload on reused key; expiry (injected clock) cannot be revived or race; ledger reconciles with balances; restart persistence; fresh vs returning player; session isolation.
 
 ### Phase 4 — HTTP API
 
-- [ ] **T4.1 Fastify app**: env, cookies, security headers, Origin/Sec-Fetch-Site checks, JSON-only bodies, body limit, rate limits, structured Pino logs with redaction, typed error handler (no stack traces).
-- [ ] **T4.2 Routes**: all endpoints in A1–A3; responses validated against contracts.
-- [ ] **T4.3 HTTP tests**: status codes, idempotency header semantics, no secret leakage while active (scan every response), cross-session access denied, CSRF/origin rejection.
+- [x] **T4.1 Fastify app**: env, cookies, security headers, Origin/Sec-Fetch-Site checks, JSON-only bodies, body limit, rate limits, structured Pino logs with redaction, typed error handler (no stack traces).
+- [x] **T4.2 Routes**: all endpoints in A1–A3; responses validated against contracts.
+- [x] **T4.3 HTTP tests**: status codes, idempotency header semantics, no secret leakage while active (scan every response), cross-session access denied, CSRF/origin rejection.
 - [ ] **T4.4 docs/API.md + docs/DATABASE.md**.
 
 ### Phase 5 — Minimal vertical slice

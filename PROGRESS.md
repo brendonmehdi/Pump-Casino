@@ -4,9 +4,10 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 
 ## Current state
 
-- **Phase:** 2 complete (contracts). Next: Phase 3 persistence.
-- **Exact next task:** T3.1 — `docker-compose.yml` with dev + test Postgres, `.env.example`,
-  then T3.2 Drizzle schema + migrations in `apps/api`.
+- **Phase:** 3 + 4 complete (database, services, HTTP API, 60 integration tests). CI added.
+- **Exact next task:** T5.1 — scaffold `apps/web` (Vite + React + Tailwind + TanStack Query),
+  typed API client with idempotency keys, then the minimal playable screen (T5.2).
+- **Docs still owed from finished phases:** T1.6 (MATH.md, FAIRNESS.md), T4.4 (API.md, DATABASE.md).
 - **Last recorded commit:** see `git log -1` (this file is committed alongside the work it describes).
 
 ## Environment facts
@@ -21,17 +22,21 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 
 ## Verified so far
 
-| Item                                                                                            | Evidence                              |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------- |
-| Curve 800 + 125(n−1) bp gives exact 97% at all 25 steps; top 794.0195× < 1,000×                 | `packages/engine/test/ladder.test.ts` |
-| Exhaustive floor + RTP check for every bet 10..100,000¢ × 25 steps (2.5M cases)                 | same file, ~1.7 s                     |
-| Worst cent-rounding case: $0.10 at pump 3 → 89.6682%                                            | same file                             |
-| Mutation check: round-half-up instead of floor → 1,249,612 violations (10¢ @ pump 1 → 101.2%)   | manual run, reverted                  |
-| Fairness vectors A/B/C generated with `node:crypto`, reproduced by the engine (`@noble/hashes`) | `fairness.test.ts`                    |
-| 100k seeded rounds: per-pump hazard and per-step RTP within 5σ; 2.00× auto strategy via engine  | `simulation.test.ts`                  |
-| Independent verifier `tools/verify-round.mjs` agrees with engine on 300 random rounds           | `independent-verifier.test.ts`        |
-| Engine suite: 7 files, 98 tests passing, ~8 s                                                   | `pnpm --filter @pump/engine test`     |
-| Contracts: strict wire formats; every malformed-input class rejected; 73 tests                  | `pnpm --filter @pump/contracts test`  |
+| Item                                                                                             | Evidence                              |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------- |
+| Curve 800 + 125(n−1) bp gives exact 97% at all 25 steps; top 794.0195× < 1,000×                  | `packages/engine/test/ladder.test.ts` |
+| Exhaustive floor + RTP check for every bet 10..100,000¢ × 25 steps (2.5M cases)                  | same file, ~1.7 s                     |
+| Worst cent-rounding case: $0.10 at pump 3 → 89.6682%                                             | same file                             |
+| Mutation check: round-half-up instead of floor → 1,249,612 violations (10¢ @ pump 1 → 101.2%)    | manual run, reverted                  |
+| Fairness vectors A/B/C generated with `node:crypto`, reproduced by the engine (`@noble/hashes`)  | `fairness.test.ts`                    |
+| 100k seeded rounds: per-pump hazard and per-step RTP within 5σ; 2.00× auto strategy via engine   | `simulation.test.ts`                  |
+| Independent verifier `tools/verify-round.mjs` agrees with engine on 300 random rounds            | `independent-verifier.test.ts`        |
+| Engine suite: 7 files, 98 tests passing, ~8 s                                                    | `pnpm --filter @pump/engine test`     |
+| Contracts: strict wire formats; every malformed-input class rejected; 73 tests                   | `pnpm --filter @pump/contracts test`  |
+| API: 60 tests on real PostgreSQL (constraints, gameplay, concurrency, security, lifecycle)       | `pnpm --filter @pump/api test`        |
+| Concurrency suite has teeth: stripping all row locks + version guard fails 6 of 12 tests         | manual mutation run, reverted         |
+| Production bundle (esbuild) serves /api/health and runs migrations from `dist/`                  | manual run                            |
+| Full curl flow: session → start → pump ×2 → cash out → history → verify → independent verifier ✓ | manual run                            |
 
 ## AI mistakes caught (candidates for AI_USAGE.md — all real, observed in this session)
 
@@ -40,7 +45,11 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
    a failed check, so `"10.00"` made `BigInt()` throw a `SyntaxError` out of `safeParse` — a 500
    instead of a 400. Caught by the "rejects bet with decimals" test; fixed by re-checking the
    pattern inside the refinement.
-2. **Slow exhaustive test.** First version of the 2.5M-case rounding sweep called `expect()` in the
+2. **Misread rate-limit API (api).** I treated `createRateLimit()`'s `isAllowed: false` as
+   "over the limit"; it actually means "not on the allow list", and the limit is `isExceeded`.
+   Every new player was rejected with 429. Caught by the first manual smoke test (curl), fixed by
+   checking `!isAllowed && isExceeded` as the plugin README shows.
+3. **Slow exhaustive test.** First version of the 2.5M-case rounding sweep called `expect()` in the
    inner loop and took 25 s; rewritten to collect violations and assert once (1.7 s).
 
 ## Architectural decisions (see IMPLEMENTATION_PLAN.md §1)
@@ -61,3 +70,5 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 
 - 2026-10-29 00:06 — session start (reading documents, environment audit).
 - 2026-10-29 00:36 — engine complete with tests.
+- 2026-10-29 00:43 — contracts complete.
+- 2026-10-29 01:15 — database, services, HTTP API and integration tests complete.
