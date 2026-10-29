@@ -1,4 +1,4 @@
-# Local development database only. Production uses Railway's managed PostgreSQL.
+# Local development database only. Production uses Render's managed PostgreSQL (render.yaml).
 services:
   postgres:
     image: postgres:18-alpine

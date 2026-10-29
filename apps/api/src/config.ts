@@ -34,14 +34,15 @@ const envSchema = z.object({
   DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(50).default(10),
   /** Defaults to true in production. Browsers only send Secure cookies over HTTPS. */
   COOKIE_SECURE: flag.optional(),
-  /** Railway: the private addresses its edge proxy connects from (see SETUP_REQUIRED.md). */
+  /** On Render: its proxies' private addresses (see docs/DEPLOYMENT.md). */
   TRUST_PROXY: trustProxy,
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(1).default(600),
   SESSIONS_PER_HOUR_PER_IP: z.coerce.number().int().min(1).default(60),
   /** Built web app to serve on the same origin; unset in development (Vite serves it). */
   WEB_DIST_DIR: z.string().min(1).optional(),
-  RAILWAY_GIT_COMMIT_SHA: z.string().optional(),
+  /** Set by Render for deploys from Git; reported by /api/health. */
+  RENDER_GIT_COMMIT: z.string().optional(),
 });
 
 export interface AppConfig {
@@ -78,6 +79,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     rateLimitPerMinute: e.RATE_LIMIT_PER_MINUTE,
     sessionsPerHourPerIp: e.SESSIONS_PER_HOUR_PER_IP,
     webDistDir: e.WEB_DIST_DIR ?? null,
-    version: e.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) ?? 'dev',
+    version: e.RENDER_GIT_COMMIT?.slice(0, 7) ?? 'dev',
   };
 }

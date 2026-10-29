@@ -1,0 +1,47 @@
+# Render Blueprint: the game (one Docker web service serving the API and the web app on one
+# origin) and its PostgreSQL database, on free plans in the same region so the app can reach
+# the database over Render's private network. See docs/DEPLOYMENT.md.
+#
+# Plans must be set explicitly: Render defaults to paid plans when `plan` is omitted.
+services:
+  - type: web
+    name: pump-casino
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # The image runs the (idempotent) migrations and then the server; free instances have no
+    # pre-deploy step. The health check also pings the database.
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    buildFilter:
+      ignoredPaths:
+        - '**/*.md'
+        - docs/**
+        - tools/**
+        - .github/**
+        - apps/web/e2e/**
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: '10000'
+      # The internal (private network) URL; the database accepts no external connections.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pump-postgres
+          property: connectionString
+      # Render's proxies connect from private addresses; X-Forwarded-For is read from the right,
+      # so addresses a client adds itself are ignored. Never `true`.
+      - key: TRUST_PROXY
+        value: uniquelocal
+
+databases:
+  - name: pump-postgres
+    plan: free
+    region: virginia
+    databaseName: pump
+    user: pump
+    postgresMajorVersion: '18'
+    ipAllowList: []
