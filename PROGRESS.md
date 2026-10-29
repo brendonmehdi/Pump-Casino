@@ -11,7 +11,12 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
   - an independent adversarial review, with all findings fixed;
   - a secrets audit of the full history, and all docs;
   - the deployment to Render: https://pump-casino.onrender.com (`render.yaml`), verified live
-    (`docs/DEPLOYMENT.md`).
+    (`docs/DEPLOYMENT.md`);
+  - the final audit (`docs/FINAL_AUDIT.md`), which covered:
+    - an independent math reproduction;
+    - an adversarial review, whose fairness finding was fixed with a fresh client seed per bet;
+    - a live UX audit, whose keyboard, layout, ladder and menu findings were fixed;
+    - the requirements traceability map (`docs/REQUIREMENTS.md`).
 - **Blocked:** nothing.
 - **Owner decisions pending** (`SETUP_REQUIRED.md`):
   - The free database expires on 2026-11-28 unless upgraded.
@@ -92,3 +97,9 @@ Resumption file: read this, then `IMPLEMENTATION_PLAN.md`, then `SETUP_REQUIRED.
 - 11:58 first deploy live; API smoke 30/30
 - 12:14 proxy trust corrected in two measured steps (loopback, then Cloudflare ranges)
 - 12:17 restart and redeploy persistence verified; browser smoke 12/12 on 3 devices
+- 13:05 final audit requested; math reproduced independently (Python), auditors started
+- 13:22 math decision: the shipped curve stays (proof plus exact comparison of 5 designs)
+- 13:34 laptop layout fix (Bet below the fold at 1280×720)
+- 13:54 fairness fix: fresh client seed per bet, checked against the shown hash
+- 14:11 UX fixes: keyboard betting, ladder preview, phone action bar, menu, a11y, copy
+- 14:16 docs: final audit, requirements map, corrected claims; 282 + 50 tests green

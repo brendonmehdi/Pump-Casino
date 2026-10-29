@@ -152,12 +152,17 @@ An open round stays playable for 24 hours. You can close the tab, refresh or com
 and the round is restored exactly where you left it. After 24 hours it is forfeited: no
 refund, and the seed is revealed in your history like any other round. Why this rule:
 
-- **The house never pays without the player's decision**, either a cash-out click or the
-  auto-target you set. Auto-settling abandoned rounds would make the server guess an
-  intention.
+- **The server never picks a cash-out point for you.** A round pays only on a rule you can see
+  in advance: your cash-out click, the auto target you set, or the top of the ladder.
+  Settling an abandoned round at its current rung would be the server choosing the moment on
+  your behalf.
 - **It can't be gamed.** A refund on abandonment would let a player bet, look at the next-pump
   odds and walk away free, an option worth more than 97%. Forfeiting can only lower a player's
   return, so the 97% ceiling holds for every possible behaviour.
+- **The alternative was considered.** Settling at the rung already reached, after at least one
+  pump, would also keep every cash-out point at exactly 97% and would be kinder to a player who
+  lost their connection. That's defensible too; we chose the stricter rule because it is
+  simpler and never pays on the server's initiative. See `docs/FINAL_AUDIT.md`.
 - **It's generous and visible.** A day is far longer than any real round, and the rule is shown
   under the bet controls.
 - **It's race-free.** Expiry is applied under the same row lock as every pump and cash-out, the

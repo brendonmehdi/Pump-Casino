@@ -207,4 +207,6 @@ curl -s -b jar "$B/api/rounds/<roundId>/verify" > round.json && node tools/verif
 
 - 600 requests per minute per IP (configurable). `/api/health` is exempt.
 - 60 new players per hour per IP (configurable). Resuming an existing session doesn't count.
+- 20 seed rotations (`POST /api/fairness/rotate`) per minute per IP: each one stores a commitment.
+- `/api/health` is exempt from limits; checks within 2 seconds share one database ping.
 - History pages hold at most 50 rounds and are paged by round nonce (`nextCursor`).

@@ -19,9 +19,10 @@ Money columns are `BIGINT` cents. Timestamps are `timestamptz`.
 
 ## Invariants enforced by the database
 
-The service layer maintains all of these. The database enforces them again, so a bug or a
-manual write cannot break them. `apps/api/test/schema-constraints.test.ts` proves each one with
-raw SQL.
+The service layer maintains all of these, and the database enforces them again, so a bug in
+the service cannot break them. `apps/api/test/schema-constraints.test.ts` proves each one with
+raw SQL. They are not a defence against someone with owner rights on the database: that role can
+disable triggers or truncate tables (see "Limits of the database checks" below).
 
 | Invariant                                                               | Enforced by                                                                                                                                    |
 | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -31,10 +32,28 @@ raw SQL.
 | One debit and at most one credit per round                              | unique index on `(round_id, entry_type)`                                                                                                       |
 | One starting grant per player                                           | partial unique index                                                                                                                           |
 | Debits negative, credits and grants positive, round link where required | `CHECK wallet_entry_shape`                                                                                                                     |
-| Ledger never edited or deleted                                          | `BEFORE UPDATE OR DELETE` trigger (migration 0001)                                                                                             |
+| Ledger rows never edited or deleted                                     | `BEFORE UPDATE OR DELETE` row trigger (migration 0001); `TRUNCATE` is not covered                                                              |
 | A round's fields match its status                                       | `CHECK rounds_*_shape` (e.g. `POPPED` ⇒ `pop_point = pump_count + 1`, `payout = 0`; `CASHED_OUT` ⇒ payout > 0, ≥ 1 pump, before the pop point) |
 | Seeds are 32 bytes and commitments 64 hex characters                    | `CHECK` constraints                                                                                                                            |
 | Each nonce used once per player                                         | unique `(player_id, nonce)`                                                                                                                    |
+
+### Limits of the database checks
+
+The independent review found two gaps, both confirmed on a scratch database:
+
+- **The balance is not tied to the ledger by the database.** No constraint says the balance
+  equals the sum of ledger entries, or that each entry's `balance_after_cents` continues the
+  previous one. The single write path keeps them in step: `postLedgerEntry` writes the entry and
+  the new balance in the same transaction, and nothing else writes either. The integration tests
+  (`assertLedgerReconciles`, including under a burst of concurrent actions) and the production
+  smoke test (wallet equals history to the cent) check it. A raw `UPDATE players SET balance_cents`
+  would not be refused.
+- **`TRUNCATE` bypasses the append-only trigger**, which is row-level. The test harness relies on
+  this to reset its database.
+
+Hardening for a real deployment would add an `AFTER INSERT` ledger trigger that maintains the
+balance (or a deferred check of it), a statement-level `BEFORE TRUNCATE` trigger, and an
+application role that can only `INSERT` into the ledger and doesn't own the tables.
 
 ## Transactions and lock order
 
@@ -95,7 +114,7 @@ the ledger's unique indexes still blocked double payment.
 ## Abandoned rounds
 
 A round left `ACTIVE` for 24 hours (`expires_at`, set from the versioned rules at start) is
-forfeited the next time the player does anything: a read, a new bet or a late pump. The
+forfeited the next time the player loads the game state, history or a verification, places a bet, or pumps or cashes out. `GET /api/wallet` alone does not resolve it, and the balance is the same either way, because the bet was debited when the round started. The
 transition is the engine's `EXPIRE`, applied under the player lock and written through
 `persistTransition`. No refund entry is written, and the seed is revealed in history. There is
 no background sweeper because nothing observable depends on one: another player can never see

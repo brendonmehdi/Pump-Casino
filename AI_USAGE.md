@@ -8,20 +8,34 @@ features). **Claude Code (model: Claude Opus 5.5)** then did the work autonomous
 session: it planned, wrote all of the code, tests and documentation in this repository, ran the
 tests and committed incrementally. Later the same day, in a short follow-up, the owner asked for
 the deployment to move from Railway to Render. Claude Code adapted the configuration, deployed
-through the owner's logged-in Render dashboard and verified the live service. The owner reviews
-the result and owns the decisions in it.
+through the owner's logged-in Render dashboard and verified the live service.
 
-| Tool                                    | Used for                                                                                                                                                                                                                              |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Claude Code (Claude Opus 5.5)           | Planning, code, tests, docs, git; driving the tools below                                                                                                                                                                             |
-| REA (MCP)                               | Attempted UX research on Stake's public Pump page. Every page stopped at a Cloudflare bot check, which was not bypassed, so `docs/UX_RESEARCH.md` is labelled secondhand. A sub-agent ran this research.                              |
-| Higgsfield (MCP)                        | Read-only evaluation of its game/website builder and the account balance. Not used: see `docs/ASSETS.md`. No credits were spent.                                                                                                      |
-| Claude Code sub-agent (review)          | A fresh agent did a read-only adversarial review of the finished code. Its findings and fixes are in `docs/QA.md` (Independent review).                                                                                               |
-| Playwright                              | The E2E suite, plus screenshots for visual review                                                                                                                                                                                     |
-| Claude in Chrome                        | Tried for visual review; screenshots timed out (the browser window was likely minimised), so Playwright was used instead                                                                                                              |
-| Docker, GitHub CLI                      | Local PostgreSQL, production image check, pushing and watching CI                                                                                                                                                                     |
-| Claude Code sub-agent (research)        | Read Render's current documentation (free-plan limits, Blueprint spec, ports, private network, proxy headers) and reported sources and gaps. Undocumented points, such as the client-IP chain, were then measured on the live service |
-| Render dashboard (via Claude in Chrome) | Applied the Blueprint, approved the Blueprint syncs, restarted the service and read logs. This used the owner's logged-in browser session; no credentials were handled and only free plans were selected                              |
+A final audit followed, which the owner asked for:
+
+- an independent recomputation of the mathematics in Python;
+- an adversarial review by a separate agent;
+- a live UX audit by another agent;
+- fixes for what they found ([`docs/FINAL_AUDIT.md`](docs/FINAL_AUDIT.md)).
+
+The owner reviews the result and owns the decisions in it.
+
+**About the history.** Every commit is a real, separate change. A few were made in quick
+succession from work that was already staged, so some share a timestamp (for example, five
+commits at 01:03:33).
+
+| Tool                                    | Used for                                                                                                                                                                                                                                              |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude Code (Claude Opus 5.5)           | Planning, code, tests, docs, git; driving the tools below                                                                                                                                                                                             |
+| REA (MCP)                               | Attempted UX research on Stake's public Pump page. Every page stopped at a Cloudflare bot check, which was not bypassed, so `docs/UX_RESEARCH.md` is labelled secondhand. A sub-agent ran this research.                                              |
+| Higgsfield (MCP)                        | Read-only evaluation of its game/website builder and the account balance. Not used: see `docs/ASSETS.md`. No credits were spent.                                                                                                                      |
+| Claude Code sub-agent (review)          | A fresh agent did a read-only adversarial review of the finished code. Its findings and fixes are in `docs/QA.md` (Independent review).                                                                                                               |
+| Playwright                              | The E2E suite, plus screenshots for visual review                                                                                                                                                                                                     |
+| Claude in Chrome                        | Tried for visual review; screenshots timed out (the browser window was likely minimised), so Playwright was used instead                                                                                                                              |
+| Docker, GitHub CLI                      | Local PostgreSQL, production image check, pushing and watching CI                                                                                                                                                                                     |
+| Claude Code sub-agent (research)        | Read Render's current documentation (free-plan limits, Blueprint spec, ports, private network, proxy headers) and reported sources and gaps. Undocumented points, such as the client-IP chain, were then measured on the live service                 |
+| Render dashboard (via Claude in Chrome) | Applied the Blueprint, approved the Blueprint syncs, restarted the service and read logs. This used the owner's logged-in browser session; no credentials were handled and only free plans were selected                                              |
+| Claude Code sub-agents (final audit)    | One reviewed the code adversarially: recomputed the math, stress-tested concurrency on a scratch database, and wrote a fairness proof of concept. Another played the live site on desktop and phones. Findings and fixes are in `docs/FINAL_AUDIT.md` |
+| Python (standard library)               | `tools/rtp_analysis.py`: an independent, exact recomputation of every bet's return, and the comparison of alternative curves                                                                                                                          |
 
 **Inspiration vs implementation.** The Stake research shaped interaction rules only, such as
 "show next-pump risk beside the button" and "one meaning per hotkey". The visual design,
@@ -51,6 +65,15 @@ exceeded is a separate `isExceeded` flag. As written, **every** new player was r
 end-to-end run (`curl POST /api/session` returned `RATE_LIMITED` on a fresh server), confirmed
 against the plugin's README, and fixed to `!isAllowed && isExceeded`. A test now asserts that
 the third session is limited and the first two are not.
+
+**A second one, caught by an independent agent.** The first session wrote "the server cannot
+pick your outcome" into the fairness panel and the docs. The independent review in the final
+audit showed it wasn't true as built. The app reused the player's client seed every round, and
+the server fixes the next round's seed in the same request that delivers the current one. So a
+dishonest server could have searched for a next seed that pops early; the reviewer's proof of
+concept did it in about 11 tries. The app now picks a fresh client seed after every bet, and the
+claims were corrected (`docs/FINAL_AUDIT.md`, finding 1). The lesson: the code was correct, but
+a claim about it needed an attack, not a reading.
 
 Other defects found by the tests during development, such as a Zod refinement that crashed on
 malformed bets and two WebKit-only failures, are listed in `docs/QA.md`.

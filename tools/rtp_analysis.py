@@ -179,7 +179,7 @@ def main():
         theory = "yes" if r["theory_exact"] and x["paid"] is x["multipliers"] else f"no (pricing ≥ {pct(r['pricing_min'], 3)})"
         print(
             f"| {x['key']} | {x['name']} | {x['rng']} | {pct(pops[0], 1)} → {pct(pops[-1], 1)} | "
-            f"{'strictly' if rising else ('never falls' if non_decreasing else 'NO')} | {float(x['multipliers'][-1]):.2f}× | {theory} | "
+            f"{'strictly' if rising else ('never falls' if non_decreasing else 'NO')} | {float(floor_to(x['multipliers'][-1], F(1, 100))):.2f}× | {theory} | "
             f"{'no' if r['over'] == 0 else r['over']} | {pct(worst)} (${bet / 100:.2f}, {pump}) | "
             f"{pct(w100[0])} (${w100[1] / 100:.2f}, {w100[2]}) | {pct(w1000[0], 3)} (${w1000[1] / 100:.2f}, {w1000[2]}) | {100 * r['mean']:.4f}% |"
         )

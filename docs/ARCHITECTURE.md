@@ -54,8 +54,12 @@ unions; invalid transitions are errors, never exceptions. `viewRound` derives on
 numbers, so the pop point cannot reach a client through it. Same inputs, same outputs: the
 property tests replay arbitrary action sequences and the verifier depends on it.
 
-The web app imports the same engine for the ladder preview and for in-browser verification.
-The rules exist in exactly one place.
+The web app imports the same engine for the ladder preview and for in-browser verification, so
+the rules exist in one place in code. Two copies are deliberate:
+
+- the standalone verifier (`tools/verify-round.mjs`) re-implements them from the published
+  specification, as an independent check that the specification is complete;
+- the verify page's "How each pump is drawn" text quotes a few constants for readers.
 
 ## Life of a pump
 

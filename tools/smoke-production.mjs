@@ -484,6 +484,21 @@ async function resumeRun() {
       !current.text.includes(seed) &&
       leakProblems(player.responses, new Map()).length === 0,
   );
+  // Rounds finished before the restart or redeploy must still verify after it.
+  const history = await player.request('GET', '/api/history?limit=50');
+  const finished = history.json?.rounds ?? [];
+  let verified = 0;
+  for (const round of finished) {
+    const response = await player.request('GET', `/api/rounds/${round.id}/verify`);
+    if (response.status === 200 && verifyRevealedRound(response.json.verification).verified) {
+      verified += 1;
+    }
+  }
+  check(
+    "every round in this session's history still verifies",
+    finished.length > 1 && verified === finished.length,
+    `${verified.toString()} of ${finished.length.toString()}`,
+  );
 }
 
 try {

@@ -179,11 +179,11 @@ from E, and none ever exceeds 97%.
 
 | Design                                                           | Pop chances                                                    |     Top | Worst, any bet | Worst at $0.10 | Worst at $1.00 | Mean, all pairs | Cost                                                     |
 | ---------------------------------------------------------------- | -------------------------------------------------------------- | ------: | -------------: | -------------: | -------------: | --------------: | -------------------------------------------------------- |
-| **A. Shipped:** linear hazard, exact multipliers                 | 8.0% → 38.0%, +1.25 points per pump                            | 794.02× | 89.67% ($0.10) |         89.67% |         96.39% |        96.9989% | none                                                     |
+| **A. Shipped:** linear hazard, exact multipliers                 | 8.0% → 38.0%, +1.25 points per pump                            | 794.01× | 89.67% ($0.10) |         89.67% |         96.39% |        96.9989% | none                                                     |
 | B. Exact 2-dp multipliers (1.05×, 1.16×, …), pop chances derived | 7.6% → 38.0%, slightly uneven                                  | 794.01× | 90.23% ($0.10) |         90.23% |         97.00% |        96.9989% | new provably-fair sampler (non-basis-point thresholds)   |
 | C. Exact 1-dp multipliers (1.1×, 1.3×, 1.6×, …)                  | 11.8% → 32.5%: 20% by pump 4, then a 20–24% plateau to pump 17 | 956.90× | 91.83% ($0.13) |         97.00% |         97.00% |        96.9994% | new sampler, harsher first pump, flat middle, lower peak |
 | D. Basis points tuned to land just above C's multipliers         | as C                                                           | 956.90× | 91.83% ($0.13) |         96.98% |         96.98% |        96.9993% | same shape problems as C, and a new rules version        |
-| E. Shipped curve, paying the displayed 2-dp multiplier           | as A                                                           | 794.02× | 89.67% ($0.10) |         89.67% |         96.39% |        96.9073% | every bet loses up to 0.6 points before cent rounding    |
+| E. Shipped curve, paying the displayed 2-dp multiplier           | as A                                                           | 794.01× | 89.67% ($0.10) |         89.67% |         96.39% |        96.9073% | every bet loses up to 0.6 points before cent rounding    |
 
 C and D follow the shipped hazard where the 0.1× grid allows. The grid forces big early steps,
 and following the curve all the way would overshoot 1,000× (1,832× at pump 25). The tool
@@ -200,6 +200,13 @@ A keeps the cleanest rule, 8% plus 1.25 points per pump, and a proof anyone can 
 line. If round small bets ever matter more than the curve, D is the cheapest upgrade: the same
 sampler with a new basis-point table, shipped as a new rules version so old rounds keep
 verifying under v1.
+
+**Randomised rounding, considered and rejected.** Paying the fractional cent with probability
+equal to the fraction would make every bet return exactly 97% on average. It could even stay
+verifiable, by drawing from the round's HMAC stream. But identical cash-outs would pay different
+amounts, the "Cash out now" figure would stop being a promise, and the fairness protocol would
+need a second kind of draw. The PDF explicitly allows rounding just under 97%, so a fixed, shown,
+floored payout is the better contract with the player.
 
 **Display honesty.** Multipliers are displayed floored to 2 dp. The amount shown on the Cash Out
 button and in the ladder is the server's exact payout, computed by the same function that
